@@ -42,3 +42,9 @@ All requested folders and files have been successfully created:
 4. Try clicking **"RANDOMIZE ALL"** to hear distinct architectural spaces and multi-speaker configurations.
 5. Drag speakers or the listener on the 2D Radar to observe real-time spatial panning, distance attenuation, and physical propagation delays.
 6. Click **"EXPORT AUDIO"** to bounce an offline render to WAV (16/24/32-bit) or MP3.
+
+## 4. GitHub Pages Deployment
+- **Deployment Status:** LIVE (`HTTP/2 200 OK`)
+- **Public URL:** https://someonenameguy.github.io/Large-Structure-Reverb/
+- **Configuration:** Enabled on branch `main` at root path `/` via GitHub API.
+- **Repository Documentation:** Published README.md with live demo badges, feature matrix, and architecture diagrams.
