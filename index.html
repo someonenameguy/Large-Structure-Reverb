@@ -1,0 +1,3742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEGASTRUCTURE // Large Architectural Reverb & PA Acoustic Simulator</title>
+  <meta name="description" content="Realistic acoustic reverberation & multi-speaker PA sound system simulator for massive architectural structures: hangars, cathedrals, stadiums, tunnels, and parking decks.">
+  <style>
+    :root {
+      --bg-base: #0b0d11;
+      --bg-surface: #12151c;
+      --bg-panel: #171b24;
+      --bg-panel-hover: #1e2330;
+      --bg-input: #0e1117;
+      --border-subtle: #252b3b;
+      --border-focus: #485470;
+      
+      --accent-cyan: #00e5ff;
+      --accent-cyan-dim: rgba(0, 229, 255, 0.15);
+      --accent-amber: #ffb300;
+      --accent-amber-dim: rgba(255, 179, 0, 0.15);
+      --accent-emerald: #00e676;
+      --accent-emerald-dim: rgba(0, 230, 118, 0.15);
+      --accent-ruby: #ff3d71;
+      --accent-ruby-dim: rgba(255, 61, 113, 0.15);
+      
+      --text-main: #edf2f7;
+      --text-muted: #8c9ba5;
+      --text-dim: #55606e;
+      
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-focus);
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 20;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #00e5ff 0%, #3d5afe 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0b0d11;
+      font-weight: 900;
+      font-size: 16px;
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title .badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      background: var(--border-subtle);
+      color: var(--accent-cyan);
+      border-radius: 4px;
+      letter-spacing: 0.8px;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons & Inputs */
+    button, .btn {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+
+    button:hover, .btn:hover {
+      background: var(--bg-panel-hover);
+      border-color: var(--border-focus);
+      color: #ffffff;
+    }
+
+    button:active, .btn:active {
+      transform: translateY(1px);
+    }
+
+    button.btn-primary {
+      background: var(--accent-cyan-dim);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+    button.btn-primary:hover {
+      background: var(--accent-cyan);
+      color: #0b0d11;
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
+    }
+
+    button.btn-accent {
+      background: var(--accent-amber-dim);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+    button.btn-accent:hover {
+      background: var(--accent-amber);
+      color: #0b0d11;
+      box-shadow: 0 0 14px rgba(255, 179, 0, 0.4);
+    }
+
+    button.btn-danger {
+      background: var(--accent-ruby-dim);
+      border-color: var(--accent-ruby);
+      color: var(--accent-ruby);
+    }
+    button.btn-danger:hover {
+      background: var(--accent-ruby);
+      color: #ffffff;
+    }
+
+    button.btn-active {
+      background: var(--accent-emerald-dim);
+      border-color: var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    select, input[type="text"], input[type="number"] {
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Master Transport Bar */
+    .transport-bar {
+      background: #0f1218;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 15;
+    }
+
+    .transport-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .transport-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .timeline-container {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .waveform-scrubber {
+      width: 100%;
+      height: 32px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .waveform-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .playhead-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 6px var(--accent-cyan);
+      pointer-events: none;
+      left: 0%;
+    }
+
+    .timeline-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Main Grid Layout */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 310px 1fr 340px;
+      flex: 1;
+      gap: 12px;
+      padding: 14px 20px;
+      max-width: 1920px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1300px) {
+      .workspace-grid {
+        grid-template-columns: 300px 1fr;
+      }
+      .col-right {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 880px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .col-right {
+        grid-column: span 1;
+      }
+    }
+
+    /* Panel Component */
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+
+    .panel:last-child {
+      margin-bottom: 0;
+    }
+
+    .panel-header {
+      background: var(--bg-panel);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-title .icon {
+      color: var(--accent-cyan);
+    }
+
+    .panel-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Sliders and Knobs controls */
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-label-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .control-label {
+      font-weight: 500;
+    }
+
+    .control-value {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border-subtle);
+      outline: none;
+      transition: background 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--accent-cyan);
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    /* Radar / Room Acoustic Map */
+    .arena-container {
+      background: #090b0e;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      min-height: 280px;
+    }
+
+    #radarCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .arena-overlay-bar {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .arena-badge {
+      background: rgba(14, 17, 23, 0.85);
+      border: 1px solid var(--border-subtle);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      backdrop-filter: blur(4px);
+      pointer-events: auto;
+    }
+
+    .arena-legend {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      background: rgba(14, 17, 23, 0.7);
+      padding: 3px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .arena-legend span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Speaker Grid / Cards */
+    .speaker-selector-tabs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .speaker-tab-btn {
+      padding: 4px 8px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      border-radius: 3px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .speaker-tab-btn.active {
+      background: var(--accent-cyan-dim);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    .speaker-tab-btn.muted {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    /* Metering & Visualizers */
+    .visualizer-box {
+      width: 100%;
+      height: 90px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+    }
+
+    #visualizerCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .stereo-meter-pair {
+      display: flex;
+      gap: 4px;
+      height: 10px;
+      background: var(--bg-input);
+      padding: 2px;
+      border-radius: 3px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .meter-channel {
+      flex: 1;
+      height: 100%;
+      background: #171b24;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .meter-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00e676 0%, #ffb300 75%, #ff3d71 100%);
+      transition: width 0.05s ease-out;
+    }
+
+    /* Toggles / Checkboxes */
+    .switch-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    .switch-checkbox {
+      appearance: none;
+      width: 28px;
+      height: 15px;
+      background: var(--border-subtle);
+      border-radius: 8px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .switch-checkbox:checked {
+      background: var(--accent-cyan);
+    }
+
+    .switch-checkbox::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.2s;
+    }
+
+    .switch-checkbox:checked::after {
+      transform: translateX(13px);
+    }
+
+    /* Modal / Popups */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-focus);
+      border-radius: var(--radius-md);
+      width: 90%;
+      max-width: 520px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: var(--bg-panel);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .modal-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      background: var(--bg-panel);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-input);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));
+      transition: width 0.1s linear;
+    }
+
+    /* Tooltips and helper notes */
+    .tip-text {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .badge-indicator {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 5px var(--accent-emerald);
+    }
+
+    .badge-indicator.idle {
+      background: var(--text-dim);
+      box-shadow: none;
+    }
+
+    .badge-indicator.warning {
+      background: var(--accent-amber);
+      box-shadow: 0 0 5px var(--accent-amber);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Brand Header -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-logo">&#x25C7;</div>
+      <div>
+        <div class="brand-title">
+          MEGASTRUCTURE <span class="badge">PRO AUDIO DSP</span>
+        </div>
+        <div class="brand-subtitle">Massive Architectural Acoustic &amp; Multi-Speaker PA System Simulator</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <!-- Structure Acoustic Presets -->
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+        PRESET:
+        <select id="presetSelect">
+          <option value="cathedral">Grand Gothic Cathedral (RT60: 7.8s)</option>
+          <option value="hangar">Boeing 747 Aircraft Hangar (RT60: 5.4s)</option>
+          <option value="cavern">Underground Subterranean Cavern (RT60: 9.2s)</option>
+          <option value="stadium">Open-Air Sports Arena &amp; PA (RT60: 4.2s)</option>
+          <option value="parking">Brutalist Multi-Story Garage (RT60: 3.5s)</option>
+          <option value="warehouse">Industrial Steel Distribution Hub (RT60: 4.8s)</option>
+          <option value="gymnasium">High-School Gymnasium (RT60: 2.6s)</option>
+          <option value="cooling_tower">Nuclear Concrete Cooling Tower (RT60: 12.0s)</option>
+          <option value="custom">Custom Architectural Space</option>
+        </select>
+      </label>
+
+      <!-- Smart Chaos / Randomizer Engine -->
+      <button id="btnRandomizeAll" class="btn-accent" title="Randomize acoustic architecture, speakers, positions, cables &amp; delay network">
+        &#x1F3B2; RANDOMIZE ALL
+      </button>
+
+      <!-- A/B Comparison Toggle -->
+      <button id="btnABCompare" class="btn" title="Toggle between Dry Audio and Wet Reverb Space">
+        A/B: <span id="abStatusText" style="color:var(--accent-cyan); font-weight:700;">WET (SPACE)</span>
+      </button>
+
+      <!-- Export Button -->
+      <button id="btnOpenExportModal" class="btn-primary" title="Export processed audio to multiple formats">
+        &#x2913; EXPORT AUDIO
+      </button>
+    </div>
+  </header>
+
+  <!-- Master Transport Bar -->
+  <div class="transport-bar">
+    <div class="transport-controls">
+      <button id="btnPlayPause" class="transport-btn btn-primary" title="Play / Pause (Spacebar)">&#x25B6;</button>
+      <button id="btnStop" class="transport-btn" title="Stop">&#x25A0;</button>
+      <button id="btnLoop" class="transport-btn btn-active" title="Loop playback">&#x21BB;</button>
+    </div>
+
+    <!-- Timeline & Scrubber -->
+    <div class="timeline-container">
+      <div class="waveform-scrubber" id="waveformScrubber">
+        <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+        <div id="playheadLine" class="playhead-line"></div>
+      </div>
+      <div class="timeline-meta">
+        <span id="timeCurrent">00:00.00</span>
+        <span id="audioTrackInfo">Demo: Cathedral PA Chime &amp; Announcement</span>
+        <span id="timeDuration">00:00.00</span>
+      </div>
+    </div>
+
+    <!-- Audio Source Selectors -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Built-in Demo Sound Picker -->
+      <select id="demoSoundSelect" title="Select built-in audio sample to audition">
+        <option value="pa_announcement">Demo: PA Chime &amp; Announcement</option>
+        <option value="snare_clap">Demo: Acoustic Snare &amp; Handclap</option>
+        <option value="drum_loop">Demo: 808 Hip-Hop Drum Break</option>
+        <option value="synth_lead">Demo: Synth Brass Progression</option>
+        <option value="acoustic_guitar">Demo: Plucked Guitar Harmonic</option>
+        <option value="impulse_click">Demo: Test Acoustic Click (Dirac)</option>
+      </select>
+
+      <!-- File Upload Picker -->
+      <div class="file-input-wrapper">
+        <button class="btn" id="btnUploadFile" title="Load WAV, MP3, OGG, FLAC, AAC, M4A, WEBM">&#x1F4C2; Upload Audio</button>
+        <input type="file" id="audioFileInput" accept="audio/*, .wav, .mp3, .ogg, .flac, .aac, .m4a, .webm, .aiff">
+      </div>
+
+      <!-- Live Mic Input -->
+      <button id="btnLiveMic" class="btn" title="Toggle Live Microphone input">&#x1F3A4; Mic</button>
+    </div>
+  </div>
+
+  <!-- Main Three-Column Workspace Layout -->
+  <main class="workspace-grid">
+
+    <!-- LEFT COLUMN: Physical Structure Acoustics & IR Synthesis -->
+    <div class="col-left">
+      
+      <!-- Room Dimensions & Physical Scale -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="icon">&#x29C9;</span> Structure Dimensions</div>
+          <span id="roomVolumeBadge" class="tip-text">64,800 m³</span>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Structure Length</span>
+              <span class="control-value" id="valLength">90 m</span>
+            </div>
+            <input type="range" id="paramLength" min="15" max="200" step="1" value="90">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Structure Width</span>
+              <span class="control-value" id="valWidth">40 m</span>
+            </div>
+            <input type="range" id="paramWidth" min="10" max="150" step="1" value="40">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Ceiling Height</span>
+              <span class="control-value" id="valHeight">18 m</span>
+            </div>
+            <input type="range" id="paramHeight" min="4" max="75" step="1" value="18">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Surface Material</span>
+            </div>
+            <select id="paramMaterial">
+              <option value="concrete">Polished Concrete &amp; Stone (0.02 abs)</option>
+              <option value="brick">Weathered Brickwork (0.04 abs)</option>
+              <option value="metal">Corrugated Sheet Metal / Industrial (0.05 abs)</option>
+              <option value="wood">Hardwood Paneling / Gym (0.12 abs)</option>
+              <option value="marble">Dense Italian Marble (0.01 abs)</option>
+              <option value="glass">Reinforced Glass Facade (0.03 abs)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reverberation Decay Physics -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="icon">&#x223F;</span> Reverb Acoustic Engine</div>
+          <button id="btnAuditionClap" class="btn" style="padding: 2px 6px; font-size: 10px;" title="Test fire an acoustic clap in the space">
+            &#x1F44F; Test Clap
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">RT60 Decay Time</span>
+              <span class="control-value" id="valRT60">7.8 s</span>
+            </div>
+            <input type="range" id="paramRT60" min="0.5" max="22.0" step="0.1" value="7.8">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Acoustic Pre-Delay</span>
+              <span class="control-value" id="valPreDelay">42 ms</span>
+            </div>
+            <input type="range" id="paramPreDelay" min="0" max="250" step="1" value="42">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Air &amp; High Damping</span>
+              <span class="control-value" id="valHighDamp">3,800 Hz</span>
+            </div>
+            <input type="range" id="paramHighDamp" min="800" max="18000" step="100" value="3800">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Bass Resonance Multiplier</span>
+              <span class="control-value" id="valBassMult">1.6 x</span>
+            </div>
+            <input type="range" id="paramBassMult" min="0.5" max="3.0" step="0.1" value="1.6">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Reflection Diffusion</span>
+              <span class="control-value" id="valDiffusion">85 %</span>
+            </div>
+            <input type="range" id="paramDiffusion" min="10" max="100" step="1" value="85">
+          </div>
+
+          <!-- IR Waveform Preview -->
+          <div style="margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-bottom: 2px;">
+              <span>Synthesized Impulse Response (IR)</span>
+              <span id="irStatusText">Ready (Active)</span>
+            </div>
+            <canvas id="irCanvas" style="width: 100%; height: 42px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 3px; display: block;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Randomizer for Acoustic Architecture -->
+      <div style="display: flex; gap: 8px;">
+        <button id="btnRandomRoom" class="btn" style="flex: 1;" title="Randomize room dimensions, materials, and RT60">
+          &#x1F3B2; Random Room
+        </button>
+      </div>
+
+    </div>
+
+    <!-- CENTER COLUMN: Interactive 2D Acoustic Floorplan & Multi-Speaker Array -->
+    <div class="col-center" style="display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- 2D Spatial Arena Radar Canvas -->
+      <div class="panel" style="margin-bottom: 0;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">&#x25C9;</span> Spatial Acoustic Arena
+            <span class="tip-text" style="font-weight: normal; margin-left: 6px;">(Drag listener &#x1F442; or speakers S1-SN)</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="btnPresetLayout" class="btn" style="padding: 2px 6px; font-size: 10px;">Arrangement &#x25BE;</button>
+            <button id="btnRandomPositions" class="btn" style="padding: 2px 6px; font-size: 10px;" title="Randomize speaker &amp; listener positions">&#x1F3B2; Scatter</button>
+          </div>
+        </div>
+
+        <div class="arena-container" id="arenaContainer">
+          <canvas id="radarCanvas"></canvas>
+          
+          <div class="arena-overlay-bar">
+            <span class="arena-badge" id="arenaDimensionsBadge">90m &times; 40m Space</span>
+            <span class="arena-badge" id="hoverSpeakerBadge">Hover over a speaker</span>
+          </div>
+
+          <div class="arena-legend">
+            <span><div class="legend-dot" style="background:#00e5ff;"></div> Listener (Ear)</span>
+            <span><div class="legend-dot" style="background:#ffb300;"></div> Active Speaker</span>
+            <span><div class="legend-dot" style="background:#ff3d71;"></div> Selected</span>
+            <span><div class="legend-dot" style="background:rgba(0,229,255,0.4);"></div> Acoustic Wavefront ($c=343$m/s)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speaker Array System & Inspector -->
+      <div class="panel" style="margin-bottom: 0; flex: 1;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">&#x1F50A;</span> Speaker Array &amp; PA Distribution
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="control-label" style="font-size: 11px;">Active Speakers:</span>
+            <span id="speakerCountDisplay" class="control-value" style="font-weight: 700;">4</span>
+            <input type="range" id="paramSpeakerCount" min="1" max="12" step="1" value="4" style="width: 70px;">
+            <button id="btnRandomSpeakers" class="btn" style="padding: 2px 6px; font-size: 10px;" title="Randomize all speaker pans, delays, filters, and volumes">&#x1F3B2; Random</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <!-- Speaker Tabs -->
+          <div class="speaker-selector-tabs" id="speakerTabsContainer">
+            <!-- Dynamically populated speaker tabs -->
+          </div>
+
+          <!-- Active Speaker Inspector Controls -->
+          <div id="speakerInspector" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+              <span id="inspectorTitle" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">SPEAKER 1 INSPECTOR</span>
+              
+              <div style="display: flex; gap: 6px;">
+                <button id="btnSpeakerMute" class="btn" style="padding: 2px 6px; font-size: 10px;">Mute</button>
+                <button id="btnSpeakerSolo" class="btn" style="padding: 2px 6px; font-size: 10px;">Solo</button>
+              </div>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 8px;">
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Speaker Driver Model</span>
+                </div>
+                <select id="spkDriverType">
+                  <option value="pa_horn">Stadium PA Horn (Bandpass 350Hz-4.5kHz, Resonant)</option>
+                  <option value="ceiling_cone">Warehouse Ceiling Speaker (Midrange 250Hz-6kHz)</option>
+                  <option value="megaphone">Megaphone / Bullhorn (500Hz-3kHz, Saturated)</option>
+                  <option value="tannoy">Tannoy Intercom (Gritty Narrow Band)</option>
+                  <option value="arena_stack">Full-Range Arena Line Array (Punchy Sub)</option>
+                  <option value="studio_flat">High-Fidelity Flat Monitor</option>
+                </select>
+              </div>
+
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Calculated Physical Delay</span>
+                  <span class="control-value" id="spkDelayVal">85 ms</span>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="range" id="spkDelayManual" min="0" max="450" step="1" value="85" style="flex: 1;">
+                  <button id="btnSyncSpeedOfSound" class="btn" style="padding: 2px 5px; font-size: 9px;" title="Auto calculate delay from physical distance to listener">Auto d/c</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-3col" style="margin-bottom: 8px;">
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Stereo Pan</span>
+                  <span class="control-value" id="spkPanVal">0 (Center)</span>
+                </div>
+                <input type="range" id="spkPan" min="-1" max="1" step="0.05" value="0">
+              </div>
+
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Volume Level</span>
+                  <span class="control-value" id="spkVolVal">-2.0 dB</span>
+                </div>
+                <input type="range" id="spkVol" min="-40" max="6" step="0.5" value="-2">
+              </div>
+
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Driver Distortion</span>
+                  <span class="control-value" id="spkDriveVal">15 %</span>
+                </div>
+                <input type="range" id="spkDrive" min="0" max="100" step="1" value="15">
+              </div>
+            </div>
+
+            <div class="grid-2col">
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Low-Pass Filter</span>
+                  <span class="control-value" id="spkLPVal">4,500 Hz</span>
+                </div>
+                <input type="range" id="spkLP" min="400" max="18000" step="100" value="4500">
+              </div>
+
+              <div class="control-row">
+                <div class="control-label-group">
+                  <span class="control-label">Reverb Room Send</span>
+                  <span class="control-value" id="spkSendVal">80 %</span>
+                </div>
+                <input type="range" id="spkSend" min="0" max="100" step="1" value="80">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Low Quality Cable Degradation & Master Output / Export -->
+    <div class="col-right">
+
+      <!-- Cable & Transmission Degradation Emulation -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="icon">&#x26A1;</span> Cable &amp; Transmission Simulator</div>
+          <label class="switch-label">
+            <input type="checkbox" id="cableEnableToggle" class="switch-checkbox" checked>
+            <span style="font-size: 10px; font-family: var(--font-mono);">ENGAGED</span>
+          </label>
+        </div>
+        <div class="panel-body">
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Cable Quality &amp; Gauge</span>
+            </div>
+            <select id="cableProfileSelect">
+              <option value="cheap_copper">Budget Unshielded 100m Copper (Heavy High-Cut)</option>
+              <option value="weathered_multicore">Weathered Stadium Multicore (Hum + HF Drop)</option>
+              <option value="rusty_pa">Corroded Industrial PA Wiring (Crackle + Saturated)</option>
+              <option value="vintage_coax">Vintage 1970s Coaxial Cable</option>
+              <option value="studio_grade">Pristine Oxygen-Free Studio Mogami</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Cable Run Distance</span>
+              <span class="control-value" id="valCableLength">85 m</span>
+            </div>
+            <input type="range" id="paramCableLength" min="5" max="300" step="5" value="85">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Capacitance High-Rolloff</span>
+              <span class="control-value" id="valCableCapCutoff">5,200 Hz</span>
+            </div>
+            <input type="range" id="paramCableCapCutoff" min="1000" max="18000" step="200" value="5200">
+          </div>
+
+          <div class="grid-2col">
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">AC Ground Hum</span>
+                <span class="control-value" id="valCableHum">12 %</span>
+              </div>
+              <input type="range" id="paramCableHum" min="0" max="60" step="1" value="12">
+            </div>
+
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">Hum Frequency</span>
+              </div>
+              <select id="paramHumFreq">
+                <option value="60">60 Hz (US / Japan)</option>
+                <option value="50">50 Hz (UK / EU / Aus)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">Contact Static Crackle</span>
+                <span class="control-value" id="valCableCrackle">15 %</span>
+              </div>
+              <input type="range" id="paramCableCrackle" min="0" max="75" step="1" value="15">
+            </div>
+
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">Transformer Saturation</span>
+                <span class="control-value" id="valCableSlew">20 %</span>
+              </div>
+              <input type="range" id="paramCableSlew" min="0" max="100" step="1" value="20">
+            </div>
+          </div>
+
+          <button id="btnRandomCable" class="btn" style="width: 100%; margin-top: 4px;" title="Randomize cable degradation parameters">&#x1F3B2; Randomize Cable Wear</button>
+        </div>
+      </div>
+
+      <!-- Master Output, Limiter & Visualizer -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="icon">&#x1F39B;</span> Master Output &amp; Acoustics</div>
+          <div style="display: flex; gap: 4px;">
+            <button id="btnVisualizerMode" class="btn" style="padding: 2px 6px; font-size: 10px;">FFT Spectrum &#x21C4;</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          
+          <!-- Master Spectrum / Goniometer Display -->
+          <div class="visualizer-box">
+            <canvas id="visualizerCanvas"></canvas>
+          </div>
+
+          <!-- Stereo Level Meters -->
+          <div class="stereo-meter-pair">
+            <div class="meter-channel"><div id="meterL" class="meter-bar"></div></div>
+            <div class="meter-channel"><div id="meterR" class="meter-bar"></div></div>
+          </div>
+
+          <!-- Mix Faders -->
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label" style="font-weight: 700;">Total Reverb Level (Wet)</span>
+              <span class="control-value" id="valWetLevel">85 %</span>
+            </div>
+            <input type="range" id="paramWetLevel" min="0" max="100" step="1" value="85">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Direct Speaker Level (Dry)</span>
+              <span class="control-value" id="valDryLevel">45 %</span>
+            </div>
+            <input type="range" id="paramDryLevel" min="0" max="100" step="1" value="45">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Stereo Acoustic Width</span>
+              <span class="control-value" id="valStereoWidth">130 %</span>
+            </div>
+            <input type="range" id="paramStereoWidth" min="0" max="200" step="5" value="130">
+          </div>
+
+          <div class="grid-3col">
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">Low EQ</span>
+                <span class="control-value" id="valEQLow">+1.5 dB</span>
+              </div>
+              <input type="range" id="paramEQLow" min="-12" max="12" step="0.5" value="1.5">
+            </div>
+
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">Mid EQ</span>
+                <span class="control-value" id="valEQMid">-2.0 dB</span>
+              </div>
+              <input type="range" id="paramEQMid" min="-12" max="12" step="0.5" value="-2">
+            </div>
+
+            <div class="control-row">
+              <div class="control-label-group">
+                <span class="control-label">High EQ</span>
+                <span class="control-value" id="valEQHigh">-1.0 dB</span>
+              </div>
+              <input type="range" id="paramEQHigh" min="-12" max="12" step="0.5" value="-1">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Master Output Volume</span>
+              <span class="control-value" id="valMasterGain">0.0 dB</span>
+            </div>
+            <input type="range" id="paramMasterGain" min="-24" max="6" step="0.5" value="0">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">BRICKWALL LIMITER</span>
+            <span class="tip-text" style="color: var(--accent-emerald); font-weight: 700;">ACTIVE (0 dBFS CEILING)</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Multi-Format Export Modal -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="panel-title">&#x2913; High-Speed Acoustic Bounce &amp; Export</div>
+        <button id="btnCloseExportModal" class="btn" style="padding: 2px 6px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 12px;">
+          Render the full acoustic simulation offline with sample-accurate physical modeling, impulse response convolution, speaker propagation delays, and cable emulation.
+        </p>
+
+        <div class="control-row">
+          <div class="control-label-group">
+            <span class="control-label">Export Audio Format</span>
+          </div>
+          <select id="exportFormat">
+            <option value="wav_16">WAV Lossless PCM (16-bit, 44.1/48kHz - Standard Master)</option>
+            <option value="wav_24">WAV Lossless PCM (24-bit High-Resolution Studio Master)</option>
+            <option value="wav_32">WAV Lossless IEEE Float (32-bit Floating Point)</option>
+            <option value="mp3_320">MP3 High Quality (320 kbps CBR)</option>
+            <option value="mp3_192">MP3 Standard Web (192 kbps CBR)</option>
+            <option value="webm_vorbis">WebM Audio / OGG Vorbis Streaming</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label-group">
+            <span class="control-label">Reverb Tail Ring-out Capture</span>
+            <span class="control-value" id="valTailPadding">+8.0 s</span>
+          </div>
+          <input type="range" id="paramTailPadding" min="0" max="18" step="1" value="8">
+          <span class="tip-text">Appends time to the end of the bounce so the massive acoustic decay tail is completely preserved.</span>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label-group">
+            <span class="control-label">Export Output Filename</span>
+          </div>
+          <input type="text" id="exportFilename" value="megastructure-cathedral-simulation.wav">
+        </div>
+
+        <!-- Render Progress -->
+        <div id="renderProgressContainer" style="display: none; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono);">
+            <span id="renderStatusText">Simulating Acoustic Environment...</span>
+            <span id="renderPercentText">0%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div id="renderProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Render Completed Preview Player -->
+        <div id="renderedAudioPreviewContainer" style="display: none; flex-direction: column; gap: 8px; background: var(--bg-input); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; color: var(--accent-emerald); font-family: var(--font-mono); font-size: 11px;">&#x2713; RENDER COMPLETE</span>
+            <span id="renderedFileSize" class="tip-text">14.2 MB</span>
+          </div>
+          <audio id="renderedAudioElement" controls style="width: 100%; height: 32px;"></audio>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelExport" class="btn">Cancel</button>
+        <button id="btnStartExport" class="btn-primary">&#x2913; Start Offline Bounce</button>
+        <a id="btnDownloadExported" class="btn btn-accent" style="display: none; text-decoration: none;" download>
+          &#x2193; Download File
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Processing Engine & DSP Script -->
+  <script>
+    /* ==========================================================================
+       MEGASTRUCTURE AUDIO WORKSTATION ENGINE (PURE JAVASCRIPT & WEB AUDIO API)
+       ========================================================================== */
+
+    // Master State
+    const AppState = {
+      audioCtx: null,
+      isPlaying: false,
+      isLooping: true,
+      isAbBypass: false, // false = Processed (Wet), true = Dry Direct
+      isMicActive: false,
+      currentTime: 0,
+      duration: 0,
+      audioBuffer: null,
+      rawAudioSourceNode: null,
+      micStreamNode: null,
+      mediaStream: null,
+      selectedSpeakerIndex: 0,
+      visualizerMode: 'fft', // 'fft' or 'vectorscope'
+      
+      // Structure Acoustic Parameters
+      room: {
+        length: 90,   // meters
+        width: 40,    // meters
+        height: 18,   // meters
+        material: 'concrete',
+        rt60: 7.8,    // seconds
+        preDelay: 42, // milliseconds
+        highDamp: 3800, // Hz
+        bassMult: 1.6, // multiplier for low frequency decay
+        diffusion: 85, // percent
+        irBuffer: null
+      },
+
+      // Virtual Listener position (in normalized room units 0.0 to 1.0)
+      listener: {
+        x: 0.5,
+        y: 0.7,
+        facingAngle: 0 // radians
+      },
+
+      // Multi-Speaker Array
+      speakers: [],
+      maxSpeakers: 12,
+
+      // Cable Degradation Parameters
+      cable: {
+        enabled: true,
+        profile: 'cheap_copper',
+        length: 85,        // meters
+        capCutoff: 5200,   // Hz
+        humGain: 0.12,     // 0 to 1
+        humFreq: 60,       // Hz
+        crackleGain: 0.15, // 0 to 1
+        slewDistortion: 0.2 // 0 to 1
+      },
+
+      // Master Mixing & EQ
+      master: {
+        wetLevel: 0.85,
+        dryLevel: 0.45,
+        stereoWidth: 1.3,
+        eqLow: 1.5,
+        eqMid: -2.0,
+        eqHigh: -1.0,
+        gain: 1.0
+      }
+    };
+
+    // Initialize Speakers
+    function createDefaultSpeaker(index, x, y) {
+      return {
+        id: index + 1,
+        x: x, // normalized 0..1
+        y: y, // normalized 0..1
+        z: 3.5, // meters height
+        driverType: 'pa_horn',
+        pan: 0,
+        volumeDb: -2.0,
+        drive: 15,
+        lpCutoff: 4500,
+        reverbSend: 80,
+        manualDelayMs: 0,
+        isMuted: false,
+        isSolo: false,
+        // Runtime Web Audio nodes
+        nodes: null
+      };
+    }
+
+    function initSpeakers(count = 4) {
+      AppState.speakers = [];
+      const presets = [
+        { x: 0.25, y: 0.25 },
+        { x: 0.75, y: 0.25 },
+        { x: 0.20, y: 0.65 },
+        { x: 0.80, y: 0.65 },
+        { x: 0.50, y: 0.15 },
+        { x: 0.15, y: 0.45 },
+        { x: 0.85, y: 0.45 },
+        { x: 0.50, y: 0.85 },
+        { x: 0.35, y: 0.35 },
+        { x: 0.65, y: 0.35 },
+        { x: 0.35, y: 0.75 },
+        { x: 0.65, y: 0.75 }
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const pos = presets[i % presets.length];
+        const spk = createDefaultSpeaker(i, pos.x, pos.y);
+        // Distribute pans and slight delay variations naturally
+        spk.pan = (spk.x - 0.5) * 1.6;
+        AppState.speakers.push(spk);
+      }
+    }
+
+    /* ==========================================================================
+       WEB AUDIO CONTEXT & DSP GRAPH CONSTRUCTION
+       ========================================================================== */
+
+    let audioCtx = null;
+    let masterInputNode = null;
+    let masterConvolverNode = null;
+    let masterDryGain = null;
+    let masterWetGain = null;
+    let masterEqLowNode = null;
+    let masterEqMidNode = null;
+    let masterEqHighNode = null;
+    let masterLimiterNode = null;
+    let masterOutputGain = null;
+    let masterAnalyserNode = null;
+    let masterSplitterNode = null;
+    let humOscillatorNode = null;
+    let humGainNode = null;
+    let crackleSourceNode = null;
+    let crackleGainNode = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        AppState.audioCtx = audioCtx;
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Build the master audio graph
+    function setupMasterAudioGraph() {
+      const ctx = getAudioContext();
+
+      // Master Input Pre-Amp
+      masterInputNode = ctx.createGain();
+      masterInputNode.gain.value = 1.0;
+
+      // Master Convolver for Realistic Structure Reverb
+      masterConvolverNode = ctx.createConvolver();
+      masterConvolverNode.normalize = false;
+
+      // Master Wet & Dry Summing
+      masterDryGain = ctx.createGain();
+      masterDryGain.gain.value = AppState.master.dryLevel;
+
+      masterWetGain = ctx.createGain();
+      masterWetGain.gain.value = AppState.master.wetLevel;
+
+      // Connect Convolver to Wet Gain
+      masterConvolverNode.connect(masterWetGain);
+
+      // Master EQ 3-Band Parametric
+      masterEqLowNode = ctx.createBiquadFilter();
+      masterEqLowNode.type = 'lowshelf';
+      masterEqLowNode.frequency.value = 120;
+      masterEqLowNode.gain.value = AppState.master.eqLow;
+
+      masterEqMidNode = ctx.createBiquadFilter();
+      masterEqMidNode.type = 'peaking';
+      masterEqMidNode.frequency.value = 1800;
+      masterEqMidNode.Q.value = 1.0;
+      masterEqMidNode.gain.value = AppState.master.eqMid;
+
+      masterEqHighNode = ctx.createBiquadFilter();
+      masterEqHighNode.type = 'highshelf';
+      masterEqHighNode.frequency.value = 6500;
+      masterEqHighNode.gain.value = AppState.master.eqHigh;
+
+      // Master Brickwall Limiter & Soft Clip
+      masterLimiterNode = ctx.createDynamicsCompressor();
+      masterLimiterNode.threshold.value = -0.5;
+      masterLimiterNode.knee.value = 1.0;
+      masterLimiterNode.ratio.value = 20.0;
+      masterLimiterNode.attack.value = 0.002;
+      masterLimiterNode.release.value = 0.08;
+
+      masterOutputGain = ctx.createGain();
+      masterOutputGain.gain.value = AppState.master.gain;
+
+      // Analyser for Spectrum FFT and Vectorscope
+      masterAnalyserNode = ctx.createAnalyser();
+      masterAnalyserNode.fftSize = 2048;
+      masterAnalyserNode.smoothingTimeConstant = 0.82;
+
+      // Splitter for stereo metering
+      masterSplitterNode = ctx.createChannelSplitter(2);
+
+      // Route summing
+      masterDryGain.connect(masterEqLowNode);
+      masterWetGain.connect(masterEqLowNode);
+
+      masterEqLowNode.connect(masterEqMidNode);
+      masterEqMidNode.connect(masterEqHighNode);
+      masterEqHighNode.connect(masterLimiterNode);
+      masterLimiterNode.connect(masterOutputGain);
+      masterOutputGain.connect(masterAnalyserNode);
+      masterOutputGain.connect(masterSplitterNode);
+      masterOutputGain.connect(ctx.destination);
+
+      // Setup Cable Ground Hum and Static Crackle
+      setupCableDegradationGenerators(ctx);
+
+      // Build initial speaker graph
+      rebuildSpeakerAudioNodes();
+
+      // Generate initial Impulse Response
+      synthesizeImpulseResponse();
+    }
+
+    // Setup Cable Hum and Static Noise Generators
+    function setupCableDegradationGenerators(ctx) {
+      if (humOscillatorNode) {
+        try { humOscillatorNode.stop(); } catch (e) {}
+      }
+
+      // 60Hz or 50Hz Ground Loop Hum with Harmonic Overtones
+      humOscillatorNode = ctx.createOscillator();
+      humOscillatorNode.type = 'sawtooth'; // gives rich odd & even harmonics of AC power
+      humOscillatorNode.frequency.value = AppState.cable.humFreq;
+
+      const humFilter = ctx.createBiquadFilter();
+      humFilter.type = 'lowpass';
+      humFilter.frequency.value = 350; // hum focus on lower harmonics
+
+      humGainNode = ctx.createGain();
+      humGainNode.gain.value = AppState.cable.enabled ? AppState.cable.humGain * 0.03 : 0;
+
+      humOscillatorNode.connect(humFilter);
+      humFilter.connect(humGainNode);
+      humGainNode.connect(masterEqLowNode);
+      humOscillatorNode.start();
+
+      // Cable Crackle & Microphonic Noise Buffer
+      const bufferSize = ctx.sampleRate * 2;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        // Sparse impulse crackle bursts + subtle pink noise floor
+        if (Math.random() < 0.0008) {
+          data[i] = (Math.random() * 2 - 1) * 0.7; // contact pop
+        } else {
+          data[i] = (Math.random() * 2 - 1) * 0.005; // noise floor
+        }
+      }
+
+      crackleSourceNode = ctx.createBufferSource();
+      crackleSourceNode.buffer = noiseBuffer;
+      crackleSourceNode.loop = true;
+
+      crackleGainNode = ctx.createGain();
+      crackleGainNode.gain.value = AppState.cable.enabled ? AppState.cable.crackleGain * 0.04 : 0;
+
+      crackleSourceNode.connect(crackleGainNode);
+      crackleGainNode.connect(masterEqLowNode);
+      crackleSourceNode.start();
+    }
+
+    // Update Cable Generator Gains
+    function updateCableGains() {
+      if (!humGainNode || !crackleGainNode) return;
+      if (AppState.cable.enabled) {
+        humGainNode.gain.setTargetAtTime(AppState.cable.humGain * 0.03, audioCtx.currentTime, 0.05);
+        crackleGainNode.gain.setTargetAtTime(AppState.cable.crackleGain * 0.04, audioCtx.currentTime, 0.05);
+      } else {
+        humGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        crackleGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+      }
+    }
+
+    // Compute Physical Propagation Delay ($t = d / 343\text{ m/s}$)
+    function computeSpeakerPropagationDelay(speaker) {
+      const roomL = AppState.room.length;
+      const roomW = AppState.room.width;
+      const dx = (speaker.x - AppState.listener.x) * roomW;
+      const dy = (speaker.y - AppState.listener.y) * roomL;
+      const dz = speaker.z || 3.0;
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const speedOfSound = 343.0; // m/s
+      return {
+        distanceMeters: distance,
+        delaySeconds: distance / speedOfSound
+      };
+    }
+
+    // Soft-clipping WaveShaper Curve for PA speaker saturation & cable slew
+    function makeDistortionCurve(amount = 20) {
+      const k = typeof amount === 'number' ? amount : 20;
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      const deg = Math.PI / 180;
+      for (let i = 0; i < n_samples; ++i) {
+        const x = (i * 2) / n_samples - 1;
+        // tanh-like smooth saturation
+        if (k <= 0) {
+          curve[i] = x;
+        } else {
+          curve[i] = Math.tanh(x * (1 + k * 0.08));
+        }
+      }
+      return curve;
+    }
+
+    // Rebuild Audio Nodes for each Speaker
+    function rebuildSpeakerAudioNodes() {
+      if (!audioCtx || !masterInputNode) return;
+
+      const anySolo = AppState.speakers.some(s => s.isSolo);
+
+      AppState.speakers.forEach(spk => {
+        // Disconnect old nodes if present
+        if (spk.nodes) {
+          try {
+            spk.nodes.inputGain.disconnect();
+            spk.nodes.cableFilter.disconnect();
+            spk.nodes.driverHpFilter.disconnect();
+            spk.nodes.driverLpFilter.disconnect();
+            spk.nodes.saturationNode.disconnect();
+            spk.nodes.delayNode.disconnect();
+            spk.nodes.pannerNode.disconnect();
+            spk.nodes.directGain.disconnect();
+            spk.nodes.reverbSendGain.disconnect();
+          } catch (e) {}
+        }
+
+        // Create new chain for this speaker
+        const inputGain = audioCtx.createGain();
+        
+        // Cable Capacitive Low-Pass Filter
+        const cableFilter = audioCtx.createBiquadFilter();
+        cableFilter.type = 'lowpass';
+        cableFilter.frequency.value = AppState.cable.enabled ? AppState.cable.capCutoff : 20000;
+
+        // Speaker Driver EQ / Horn Profile
+        const driverHpFilter = audioCtx.createBiquadFilter();
+        driverHpFilter.type = 'highpass';
+        
+        const driverLpFilter = audioCtx.createBiquadFilter();
+        driverLpFilter.type = 'lowpass';
+
+        applyDriverProfile(driverHpFilter, driverLpFilter, spk.driverType, spk.lpCutoff);
+
+        // Saturation / Diaphragm Overdrive
+        const saturationNode = audioCtx.createWaveShaper();
+        saturationNode.curve = makeDistortionCurve(spk.drive);
+        saturationNode.oversample = '2x';
+
+        // Acoustic Propagation Delay
+        const delayNode = audioCtx.createDelay(1.5);
+        const physical = computeSpeakerPropagationDelay(spk);
+        const targetDelay = (spk.manualDelayMs > 0) ? (spk.manualDelayMs / 1000) : physical.delaySeconds;
+        delayNode.delayTime.value = Math.min(1.4, Math.max(0.001, targetDelay));
+
+        // Pan Node
+        const pannerNode = audioCtx.createStereoPanner();
+        pannerNode.pan.value = Math.max(-1, Math.min(1, spk.pan));
+
+        // Direct & Reverb Send Gains
+        const directGain = audioCtx.createGain();
+        const reverbSendGain = audioCtx.createGain();
+
+        // Check Mute / Solo
+        let effectiveVol = Math.pow(10, spk.volumeDb / 20);
+        if (spk.isMuted || (anySolo && !spk.isSolo)) {
+          effectiveVol = 0;
+        }
+
+        directGain.gain.value = effectiveVol;
+        reverbSendGain.gain.value = effectiveVol * (spk.reverbSend / 100);
+
+        // Connect Chain
+        // masterInputNode -> inputGain -> cableFilter -> driverHp -> driverLp -> saturation -> delay -> panner
+        masterInputNode.connect(inputGain);
+        inputGain.connect(cableFilter);
+        cableFilter.connect(driverHpFilter);
+        driverHpFilter.connect(driverLpFilter);
+        driverLpFilter.connect(saturationNode);
+        saturationNode.connect(delayNode);
+        delayNode.connect(pannerNode);
+
+        // Panner splits to Direct Dry Sum and Master Reverb Convolver
+        pannerNode.connect(directGain);
+        directGain.connect(masterDryGain);
+
+        pannerNode.connect(reverbSendGain);
+        reverbSendGain.connect(masterConvolverNode);
+
+        spk.nodes = {
+          inputGain,
+          cableFilter,
+          driverHpFilter,
+          driverLpFilter,
+          saturationNode,
+          delayNode,
+          pannerNode,
+          directGain,
+          reverbSendGain
+        };
+      });
+    }
+
+    // Apply Driver Profile Filter Parameters
+    function applyDriverProfile(hpFilter, lpFilter, driverType, userLp) {
+      switch (driverType) {
+        case 'pa_horn':
+          hpFilter.frequency.value = 350;
+          hpFilter.Q.value = 1.2;
+          lpFilter.frequency.value = Math.min(userLp, 4800);
+          lpFilter.Q.value = 2.0; // resonant horn peak
+          break;
+        case 'ceiling_cone':
+          hpFilter.frequency.value = 220;
+          hpFilter.Q.value = 0.7;
+          lpFilter.frequency.value = Math.min(userLp, 6500);
+          lpFilter.Q.value = 1.0;
+          break;
+        case 'megaphone':
+          hpFilter.frequency.value = 550;
+          hpFilter.Q.value = 2.5;
+          lpFilter.frequency.value = Math.min(userLp, 3200);
+          lpFilter.Q.value = 3.0; // extreme nasal honk
+          break;
+        case 'tannoy':
+          hpFilter.frequency.value = 400;
+          hpFilter.Q.value = 1.0;
+          lpFilter.frequency.value = Math.min(userLp, 3800);
+          lpFilter.Q.value = 1.4;
+          break;
+        case 'arena_stack':
+          hpFilter.frequency.value = 35;
+          hpFilter.Q.value = 0.7;
+          lpFilter.frequency.value = Math.min(userLp, 16000);
+          lpFilter.Q.value = 0.7;
+          break;
+        case 'studio_flat':
+        default:
+          hpFilter.frequency.value = 20;
+          hpFilter.Q.value = 0.5;
+          lpFilter.frequency.value = userLp;
+          lpFilter.Q.value = 0.7;
+          break;
+      }
+    }
+
+    // Update real-time speaker parameters without node reconstruction
+    function updateSpeakerRuntimeParams(spk) {
+      if (!spk.nodes || !audioCtx) return;
+      const anySolo = AppState.speakers.some(s => s.isSolo);
+      let effectiveVol = Math.pow(10, spk.volumeDb / 20);
+      if (spk.isMuted || (anySolo && !spk.isSolo)) {
+        effectiveVol = 0;
+      }
+
+      spk.nodes.directGain.gain.setTargetAtTime(effectiveVol, audioCtx.currentTime, 0.02);
+      spk.nodes.reverbSendGain.gain.setTargetAtTime(effectiveVol * (spk.reverbSend / 100), audioCtx.currentTime, 0.02);
+      spk.nodes.pannerNode.pan.setTargetAtTime(Math.max(-1, Math.min(1, spk.pan)), audioCtx.currentTime, 0.02);
+
+      const physical = computeSpeakerPropagationDelay(spk);
+      const targetDelay = (spk.manualDelayMs > 0) ? (spk.manualDelayMs / 1000) : physical.delaySeconds;
+      spk.nodes.delayNode.delayTime.setTargetAtTime(Math.min(1.4, Math.max(0.001, targetDelay)), audioCtx.currentTime, 0.04);
+
+      applyDriverProfile(spk.nodes.driverHpFilter, spk.nodes.driverLpFilter, spk.driverType, spk.lpCutoff);
+    }
+
+    /* ==========================================================================
+       REALISTIC IMPULSE RESPONSE (IR) PROCEDURAL SYNTHESIS ENGINE
+       ========================================================================== */
+
+    function synthesizeImpulseResponse() {
+      const ctx = getAudioContext();
+      const sampleRate = ctx.sampleRate;
+      const rt60 = AppState.room.rt60;
+      const lengthSeconds = Math.max(1.0, Math.min(16.0, rt60 * 1.15));
+      const lengthSamples = Math.floor(sampleRate * lengthSeconds);
+
+      // Create stereo buffer
+      const irBuffer = ctx.createBuffer(2, lengthSamples, sampleRate);
+      const left = irBuffer.getChannelData(0);
+      const right = irBuffer.getChannelData(1);
+
+      const decayFactor = -3 * Math.log(10) / rt60;
+      const preDelaySamples = Math.floor((AppState.room.preDelay / 1000) * sampleRate);
+      const diffusion = AppState.room.diffusion / 100;
+      const bassMult = AppState.room.bassMult;
+      const highCutHz = AppState.room.highDamp;
+
+      // Material absorption coefficients
+      let materialAbsorption = 0.04;
+      switch (AppState.room.material) {
+        case 'concrete': materialAbsorption = 0.02; break;
+        case 'brick': materialAbsorption = 0.04; break;
+        case 'metal': materialAbsorption = 0.03; break;
+        case 'wood': materialAbsorption = 0.14; break;
+        case 'marble': materialAbsorption = 0.01; break;
+        case 'glass': materialAbsorption = 0.03; break;
+      }
+
+      // 1. Generate Early Reflection Cluster (Image-Source Ray-tracing approximations)
+      const numEarlyReflections = 28;
+      const earlyReflections = [];
+      const roomL = AppState.room.length;
+      const roomW = AppState.room.width;
+      const roomH = AppState.room.height;
+
+      // Primary boundary bounce arrival times
+      for (let i = 0; i < numEarlyReflections; i++) {
+        const order = Math.floor(i / 6) + 1;
+        const delayDist = (Math.random() * 0.6 + 0.4) * (roomW * order * 0.7);
+        const timeSec = (delayDist / 343.0) + (AppState.room.preDelay / 1000);
+        const sampleIndex = Math.floor(timeSec * sampleRate);
+        const amp = (Math.pow(1 - materialAbsorption, order) / (order * 1.4)) * (Math.random() * 0.4 + 0.8);
+        const pan = (Math.random() * 2 - 1) * 0.8;
+        earlyReflections.push({ sampleIndex, amp, pan });
+      }
+
+      // 2. Synthesize Stochastic Late Reverberation with Multi-Band Exponential Decay
+      let prevL = 0;
+      let prevR = 0;
+      const lpAlpha = Math.exp(-2 * Math.PI * highCutHz / sampleRate);
+
+      for (let i = 0; i < lengthSamples; i++) {
+        if (i < preDelaySamples) {
+          left[i] = 0;
+          right[i] = 0;
+          continue;
+        }
+
+        const t = (i - preDelaySamples) / sampleRate;
+
+        // Exponential decay envelope
+        // Low frequencies decay slower (bass multiplier), high frequencies decay faster
+        const env = Math.exp(decayFactor * t);
+        const envBass = Math.exp((decayFactor / bassMult) * t);
+
+        // Smooth acoustic onset ramp (20ms rise time) to prevent artificial transient pop
+        const onsetRamp = Math.min(1.0, t / 0.025);
+
+        // Uncorrelated Gaussian random noise for dense diffuse tail
+        const rawNoiseL = (Math.random() * 2 - 1);
+        const rawNoiseR = (Math.random() * 2 - 1);
+
+        // 1st order IIR lowpass filter for air absorption over distance
+        prevL = (1 - lpAlpha) * rawNoiseL + lpAlpha * prevL;
+        prevR = (1 - lpAlpha) * rawNoiseR + lpAlpha * prevR;
+
+        // Combine high-decay & resonant bass tail
+        let sampleL = ((rawNoiseL * 0.3 + prevL * 0.7) * env + prevL * 0.3 * envBass) * onsetRamp;
+        let sampleR = ((rawNoiseR * 0.3 + prevR * 0.7) * env + prevR * 0.3 * envBass) * onsetRamp;
+
+        left[i] = sampleL;
+        right[i] = sampleR;
+      }
+
+      // 3. Inject Early Reflections
+      earlyReflections.forEach(ref => {
+        if (ref.sampleIndex < lengthSamples) {
+          const leftGain = Math.cos((ref.pan + 1) * Math.PI / 4) * ref.amp;
+          const rightGain = Math.sin((ref.pan + 1) * Math.PI / 4) * ref.amp;
+          left[ref.sampleIndex] += leftGain;
+          right[ref.sampleIndex] += rightGain;
+        }
+      });
+
+      // 4. Energy Normalization (equal power across varying RT60)
+      let sumSquares = 0;
+      for (let i = 0; i < lengthSamples; i += 4) {
+        sumSquares += left[i] * left[i] + right[i] * right[i];
+      }
+      const rms = Math.sqrt(sumSquares / (lengthSamples / 2));
+      const targetRms = 0.045;
+      const normGain = (rms > 0.0001) ? (targetRms / rms) : 1.0;
+
+      for (let i = 0; i < lengthSamples; i++) {
+        left[i] = Math.max(-1, Math.min(1, left[i] * normGain));
+        right[i] = Math.max(-1, Math.min(1, right[i] * normGain));
+      }
+
+      AppState.room.irBuffer = irBuffer;
+      if (masterConvolverNode) {
+        masterConvolverNode.buffer = irBuffer;
+      }
+
+      drawIrWaveform();
+      document.getElementById('irStatusText').textContent = `Ready (${rt60.toFixed(1)}s)`;
+    }
+
+    // Draw IR Waveform Preview
+    function drawIrWaveform() {
+      const canvas = document.getElementById('irCanvas');
+      if (!canvas || !AppState.room.irBuffer) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      const h = canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+      ctx.fillStyle = '#0e1117';
+      ctx.fillRect(0, 0, w, h);
+
+      const data = AppState.room.irBuffer.getChannelData(0);
+      const step = Math.ceil(data.length / w);
+      const mid = h / 2;
+
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+
+      for (let x = 0; x < w; x++) {
+        let min = 1.0;
+        let max = -1.0;
+        for (let j = 0; j < step; j++) {
+          const val = data[x * step + j] || 0;
+          if (val < min) min = val;
+          if (val > max) max = val;
+        }
+        ctx.moveTo(x, mid + min * mid * 0.9);
+        ctx.lineTo(x, mid + max * mid * 0.9);
+      }
+      ctx.stroke();
+    }
+
+    /* ==========================================================================
+       BUILT-IN SYNTHETIC AUDIO GENERATOR & DEMO TRACKS
+       ========================================================================== */
+
+    function generateDemoAudioBuffer(type = 'pa_announcement') {
+      const ctx = getAudioContext();
+      const sr = ctx.sampleRate;
+      let durationSec = 4.0;
+      if (type === 'pa_announcement') durationSec = 5.0;
+      if (type === 'drum_loop') durationSec = 4.0;
+      if (type === 'synth_lead') durationSec = 5.5;
+      if (type === 'snare_clap') durationSec = 3.0;
+      if (type === 'impulse_click') durationSec = 1.5;
+
+      const numSamples = Math.floor(sr * durationSec);
+      const buffer = ctx.createBuffer(2, numSamples, sr);
+      const chL = buffer.getChannelData(0);
+      const chR = buffer.getChannelData(1);
+
+      if (type === 'pa_announcement') {
+        // Two-tone European airport/station PA chime: C5 (523Hz) -> G4 (392Hz)
+        // Followed by bandlimited resonant vocal announcement syllables
+        const chime1Time = 0.1;
+        const chime2Time = 0.65;
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sr;
+          let s = 0;
+          // Chime 1
+          if (t >= chime1Time && t < chime1Time + 0.8) {
+            const dt = t - chime1Time;
+            s += Math.sin(2 * Math.PI * 523.25 * dt) * Math.exp(-dt * 3.5) * 0.6;
+            s += Math.sin(2 * Math.PI * 1046.5 * dt) * Math.exp(-dt * 5.0) * 0.2;
+          }
+          // Chime 2
+          if (t >= chime2Time && t < chime2Time + 0.9) {
+            const dt = t - chime2Time;
+            s += Math.sin(2 * Math.PI * 392.00 * dt) * Math.exp(-dt * 3.2) * 0.6;
+            s += Math.sin(2 * Math.PI * 784.0 * dt) * Math.exp(-dt * 4.8) * 0.2;
+          }
+          // Voice syllables simulation ("At-ten-tion please: all pas-sen-gers...")
+          if (t >= 1.6 && t < 4.6) {
+            const vt = t - 1.6;
+            const syllableFreq = 4.0; // syllables per second
+            const syllEnv = Math.sin(vt * Math.PI * syllableFreq);
+            if (syllEnv > 0) {
+              // Vocal tract formant simulation (Formants at 700Hz, 1200Hz, 2400Hz)
+              const f0 = 135 + Math.sin(vt * 10) * 15; // pitch modulation
+              const buzz = (Math.sin(2 * Math.PI * f0 * vt) > 0 ? 1 : -1) * 0.3;
+              const formant = Math.sin(2 * Math.PI * 850 * vt) * 0.4 + Math.sin(2 * Math.PI * 1450 * vt) * 0.3;
+              s += buzz * formant * syllEnv * 0.45;
+            }
+          }
+          chL[i] = s;
+          chR[i] = s;
+        }
+      } else if (type === 'drum_loop') {
+        // Snappy 808 kick, snare and hats loop
+        const bpm = 120;
+        const beatSec = 60 / bpm;
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sr;
+          const beat = (t / beatSec) % 4;
+          let s = 0;
+          // Kick on beat 0 and beat 2.5
+          const kickTimes = [0, 2.5];
+          kickTimes.forEach(kt => {
+            const dt = (beat - kt) * beatSec;
+            if (dt >= 0 && dt < 0.4) {
+              const freq = 120 * Math.exp(-dt * 22) + 42;
+              s += Math.sin(2 * Math.PI * freq * dt) * Math.exp(-dt * 7.5) * 0.8;
+            }
+          });
+          // Snare on beat 1 and beat 3
+          const snareTimes = [1.0, 3.0];
+          snareTimes.forEach(st => {
+            const dt = (beat - st) * beatSec;
+            if (dt >= 0 && dt < 0.35) {
+              const tone = Math.sin(2 * Math.PI * 185 * dt) * Math.exp(-dt * 18) * 0.5;
+              const noise = (Math.random() * 2 - 1) * Math.exp(-dt * 14) * 0.6;
+              s += tone + noise;
+            }
+          });
+          // Hi-hat every 0.5 beats
+          const hatTime = beat % 0.5;
+          const dt = hatTime * beatSec;
+          if (dt >= 0 && dt < 0.08) {
+            s += (Math.random() * 2 - 1) * Math.exp(-dt * 45) * 0.25;
+          }
+          chL[i] = s;
+          chR[i] = s;
+        }
+      } else if (type === 'synth_lead') {
+        // Lush rich detuned supersaw synth chord progression
+        const chords = [
+          [220, 261.63, 329.63], // Am (A3, C4, E4)
+          [174.61, 220, 261.63], // F (F3, A3, C4)
+          [261.63, 329.63, 392], // C (C4, E4, G4)
+          [196, 246.94, 293.66]  // G (G3, B3, D4)
+        ];
+        const stepTime = durationSec / chords.length;
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sr;
+          const chordIdx = Math.floor(t / stepTime) % chords.length;
+          const dt = t % stepTime;
+          const chord = chords[chordIdx];
+          let sL = 0;
+          let sR = 0;
+          const env = Math.min(1.0, dt / 0.05) * Math.exp(-dt * 0.4);
+          chord.forEach(freq => {
+            sL += Math.sin(2 * Math.PI * freq * t) * 0.18;
+            sL += Math.sin(2 * Math.PI * (freq * 1.006) * t) * 0.12;
+            sR += Math.sin(2 * Math.PI * (freq * 0.994) * t) * 0.18;
+            sR += Math.sin(2 * Math.PI * (freq * 1.008) * t) * 0.12;
+          });
+          chL[i] = sL * env;
+          chR[i] = sR * env;
+        }
+      } else if (type === 'snare_clap') {
+        // Isolated acoustic clap and snare hits spaced out to clearly hear long structure tails
+        const hitTimes = [0.2, 1.8];
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sr;
+          let s = 0;
+          hitTimes.forEach((ht, idx) => {
+            const dt = t - ht;
+            if (dt >= 0 && dt < 0.4) {
+              if (idx === 0) {
+                // Handclap: 3 small pre-spikes then burst
+                const burst1 = (dt < 0.012) ? (Math.random() * 2 - 1) * 0.5 : 0;
+                const burst2 = (dt >= 0.012 && dt < 0.024) ? (Math.random() * 2 - 1) * 0.6 : 0;
+                const burst3 = (dt >= 0.024) ? (Math.random() * 2 - 1) * Math.exp(-(dt - 0.024) * 25) * 0.8 : 0;
+                s += burst1 + burst2 + burst3;
+              } else {
+                // Snare snap
+                const tone = Math.sin(2 * Math.PI * 210 * dt) * Math.exp(-dt * 20) * 0.6;
+                const noise = (Math.random() * 2 - 1) * Math.exp(-dt * 15) * 0.7;
+                s += tone + noise;
+              }
+            }
+          });
+          chL[i] = s;
+          chR[i] = s;
+        }
+      } else if (type === 'impulse_click') {
+        // Single pristine acoustic click / Dirac impulse
+        chL[Math.floor(0.1 * sr)] = 0.95;
+        chR[Math.floor(0.1 * sr)] = 0.95;
+      }
+
+      return buffer;
+    }
+
+    /* ==========================================================================
+       PLAYBACK & TRANSPORT CONTROLS
+       ========================================================================== */
+
+    let playStartTime = 0;
+    let playStartOffset = 0;
+    let animFrameId = null;
+
+    function playAudio(offsetSec = 0) {
+      const ctx = getAudioContext();
+      if (!AppState.audioBuffer) {
+        AppState.audioBuffer = generateDemoAudioBuffer('pa_announcement');
+        AppState.duration = AppState.audioBuffer.duration;
+        drawTimelineWaveform();
+      }
+
+      stopAudio();
+
+      const source = ctx.createBufferSource();
+      source.buffer = AppState.audioBuffer;
+      source.loop = AppState.isLooping;
+
+      source.connect(masterInputNode);
+
+      playStartTime = ctx.currentTime;
+      playStartOffset = offsetSec % AppState.audioBuffer.duration;
+
+      source.start(0, playStartOffset);
+      AppState.rawAudioSourceNode = source;
+      AppState.isPlaying = true;
+
+      source.onended = () => {
+        if (!AppState.isLooping && AppState.isPlaying) {
+          AppState.isPlaying = false;
+          updateTransportButtons();
+        }
+      };
+
+      updateTransportButtons();
+      startPlaybackTracker();
+    }
+
+    function pauseAudio() {
+      if (!AppState.isPlaying) return;
+      const ctx = getAudioContext();
+      playStartOffset = (ctx.currentTime - playStartTime + playStartOffset) % AppState.duration;
+      stopAudio();
+      AppState.currentTime = playStartOffset;
+      updatePlayheadPosition();
+      updateTransportButtons();
+    }
+
+    function stopAudio() {
+      if (AppState.rawAudioSourceNode) {
+        try {
+          AppState.rawAudioSourceNode.stop();
+          AppState.rawAudioSourceNode.disconnect();
+        } catch (e) {}
+        AppState.rawAudioSourceNode = null;
+      }
+      AppState.isPlaying = false;
+      updateTransportButtons();
+    }
+
+    function togglePlayPause() {
+      if (AppState.isPlaying) {
+        pauseAudio();
+      } else {
+        playAudio(AppState.currentTime);
+      }
+    }
+
+    function updateTransportButtons() {
+      const btn = document.getElementById('btnPlayPause');
+      if (AppState.isPlaying) {
+        btn.innerHTML = '&#x23F8;';
+        btn.classList.add('btn-accent');
+      } else {
+        btn.innerHTML = '&#x25B6;';
+        btn.classList.remove('btn-accent');
+      }
+    }
+
+    function startPlaybackTracker() {
+      function track() {
+        if (AppState.isPlaying && AppState.audioCtx && AppState.duration > 0) {
+          const current = (AppState.audioCtx.currentTime - playStartTime + playStartOffset);
+          AppState.currentTime = AppState.isLooping ? (current % AppState.duration) : Math.min(AppState.duration, current);
+          updatePlayheadPosition();
+        }
+        requestAnimationFrame(track);
+      }
+      requestAnimationFrame(track);
+    }
+
+    function formatTime(sec) {
+      if (isNaN(sec) || sec < 0) sec = 0;
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      const ms = Math.floor((sec % 1) * 100);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    }
+
+    function updatePlayheadPosition() {
+      const line = document.getElementById('playheadLine');
+      const timeCurrent = document.getElementById('timeCurrent');
+      const timeDuration = document.getElementById('timeDuration');
+      if (line && AppState.duration > 0) {
+        const pct = (AppState.currentTime / AppState.duration) * 100;
+        line.style.left = `${pct}%`;
+      }
+      if (timeCurrent) timeCurrent.textContent = formatTime(AppState.currentTime);
+      if (timeDuration) timeDuration.textContent = formatTime(AppState.duration);
+    }
+
+    // Draw audio scrubber waveform
+    function drawTimelineWaveform() {
+      const canvas = document.getElementById('waveformCanvas');
+      if (!canvas || !AppState.audioBuffer) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      const h = canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+      ctx.fillStyle = '#0e1117';
+      ctx.fillRect(0, 0, w, h);
+
+      const data = AppState.audioBuffer.getChannelData(0);
+      const step = Math.ceil(data.length / w);
+      const mid = h / 2;
+
+      ctx.strokeStyle = '#252b3b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x < w; x++) {
+        let min = 1.0;
+        let max = -1.0;
+        for (let j = 0; j < step; j++) {
+          const val = data[x * step + j] || 0;
+          if (val < min) min = val;
+          if (val > max) max = val;
+        }
+        ctx.moveTo(x, mid + min * mid * 0.9);
+        ctx.lineTo(x, mid + max * mid * 0.9);
+      }
+      ctx.stroke();
+
+      // Foreground accent wave
+      ctx.strokeStyle = '#00e5ff';
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 2) {
+        let max = 0;
+        for (let j = 0; j < step * 2; j++) {
+          const val = Math.abs(data[x * step + j] || 0);
+          if (val > max) max = val;
+        }
+        ctx.moveTo(x, mid - max * mid * 0.85);
+        ctx.lineTo(x, mid + max * mid * 0.85);
+      }
+      ctx.stroke();
+    }
+
+    /* ==========================================================================
+       FILE UPLOAD & FORMAT DECODING
+       ========================================================================== */
+
+    function setupFileUploader() {
+      const input = document.getElementById('audioFileInput');
+      const trackInfo = document.getElementById('audioTrackInfo');
+
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const ctx = getAudioContext();
+        trackInfo.textContent = `Loading: ${file.name}...`;
+
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const decoded = await ctx.decodeAudioData(arrayBuffer);
+          AppState.audioBuffer = decoded;
+          AppState.duration = decoded.duration;
+          AppState.currentTime = 0;
+          trackInfo.textContent = `${file.name} (${decoded.sampleRate}Hz, ${decoded.numberOfChannels}ch, ${decoded.duration.toFixed(1)}s)`;
+          drawTimelineWaveform();
+          updatePlayheadPosition();
+          playAudio(0);
+        } catch (err) {
+          alert('Failed to decode audio file. Please ensure it is a valid audio format (WAV, MP3, OGG, FLAC, AAC, M4A, WEBM).');
+          trackInfo.textContent = 'Error decoding audio file.';
+        }
+      });
+
+      // Waveform scrubber click
+      const scrubber = document.getElementById('waveformScrubber');
+      scrubber.addEventListener('click', (e) => {
+        if (!AppState.duration) return;
+        const rect = scrubber.getBoundingClientRect();
+        const clickPct = (e.clientX - rect.left) / rect.width;
+        AppState.currentTime = clickPct * AppState.duration;
+        updatePlayheadPosition();
+        if (AppState.isPlaying) {
+          playAudio(AppState.currentTime);
+        }
+      });
+    }
+
+    // Live Mic Monitoring
+    function toggleLiveMic() {
+      const btn = document.getElementById('btnLiveMic');
+      const ctx = getAudioContext();
+
+      if (AppState.isMicActive) {
+        // Disconnect mic
+        if (AppState.micStreamNode) {
+          try {
+            AppState.micStreamNode.disconnect();
+          } catch (e) {}
+          AppState.micStreamNode = null;
+        }
+        if (AppState.mediaStream) {
+          AppState.mediaStream.getTracks().forEach(t => t.stop());
+          AppState.mediaStream = null;
+        }
+        AppState.isMicActive = false;
+        btn.classList.remove('btn-active');
+        btn.innerHTML = '&#x1F3A4; Mic';
+      } else {
+        // Request microphone
+        navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+          .then(stream => {
+            AppState.mediaStream = stream;
+            AppState.micStreamNode = ctx.createMediaStreamSource(stream);
+            AppState.micStreamNode.connect(masterInputNode);
+            AppState.isMicActive = true;
+            btn.classList.add('btn-active');
+            btn.innerHTML = '&#x1F3A4; Mic (LIVE)';
+          })
+          .catch(err => {
+            alert('Microphone access denied or unavailable: ' + err.message);
+          });
+      }
+    }
+
+    /* ==========================================================================
+       INTERACTIVE 2D ACOUSTIC ARENA RADAR & CANVAS RENDERER
+       ========================================================================== */
+
+    let draggedItem = null; // { type: 'listener' | 'speaker', index?: number }
+    const radarCanvas = document.getElementById('radarCanvas');
+    const acousticRings = []; // Animated soundwave ripples expanding at 343m/s
+
+    function initRadar() {
+      const container = document.getElementById('arenaContainer');
+
+      function resize() {
+        radarCanvas.width = radarCanvas.clientWidth * window.devicePixelRatio;
+        radarCanvas.height = radarCanvas.clientHeight * window.devicePixelRatio;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // Mouse drag handlers
+      radarCanvas.addEventListener('mousedown', onRadarMouseDown);
+      window.addEventListener('mousemove', onRadarMouseMove);
+      window.addEventListener('mouseup', onRadarMouseUp);
+
+      // Touch drag support
+      radarCanvas.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        onRadarMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (draggedItem) {
+          const touch = e.touches[0];
+          onRadarMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchend', onRadarMouseUp);
+
+      // Start render loop
+      requestAnimationFrame(renderRadarFrame);
+    }
+
+    function getNormalizedCoords(e) {
+      const rect = radarCanvas.getBoundingClientRect();
+      const x = Math.max(0.04, Math.min(0.96, (e.clientX - rect.left) / rect.width));
+      const y = Math.max(0.04, Math.min(0.96, (e.clientY - rect.top) / rect.height));
+      return { x, y };
+    }
+
+    function onRadarMouseDown(e) {
+      const rect = radarCanvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const w = rect.width;
+      const h = rect.height;
+
+      // Check distance to listener
+      const lx = AppState.listener.x * w;
+      const ly = AppState.listener.y * h;
+      if (Math.hypot(px - lx, py - ly) < 18) {
+        draggedItem = { type: 'listener' };
+        return;
+      }
+
+      // Check distance to speakers
+      for (let i = 0; i < AppState.speakers.length; i++) {
+        const spk = AppState.speakers[i];
+        const sx = spk.x * w;
+        const sy = spk.y * h;
+        if (Math.hypot(px - sx, py - sy) < 18) {
+          draggedItem = { type: 'speaker', index: i };
+          selectSpeaker(i);
+          return;
+        }
+      }
+    }
+
+    function onRadarMouseMove(e) {
+      if (draggedItem) {
+        const { x, y } = getNormalizedCoords(e);
+        if (draggedItem.type === 'listener') {
+          AppState.listener.x = x;
+          AppState.listener.y = y;
+          // Update delays for all speakers
+          AppState.speakers.forEach(spk => updateSpeakerRuntimeParams(spk));
+          updateSpeakerInspectorUI();
+        } else if (draggedItem.type === 'speaker') {
+          const spk = AppState.speakers[draggedItem.index];
+          spk.x = x;
+          spk.y = y;
+          // Pan follows X position
+          spk.pan = Math.max(-1, Math.min(1, (spk.x - 0.5) * 1.8));
+          updateSpeakerRuntimeParams(spk);
+          updateSpeakerInspectorUI();
+        }
+        return;
+      }
+
+      // Hover check for badge display
+      const rect = radarCanvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const w = rect.width;
+      const h = rect.height;
+
+      let hovered = null;
+      for (let i = 0; i < AppState.speakers.length; i++) {
+        const spk = AppState.speakers[i];
+        if (Math.hypot(px - spk.x * w, py - spk.y * h) < 18) {
+          hovered = spk;
+          break;
+        }
+      }
+
+      const badge = document.getElementById('hoverSpeakerBadge');
+      if (hovered) {
+        const phys = computeSpeakerPropagationDelay(hovered);
+        badge.textContent = `Speaker ${hovered.id}: ${phys.distanceMeters.toFixed(1)}m away (${(phys.delaySeconds * 1000).toFixed(0)}ms delay)`;
+      } else {
+        badge.textContent = 'Hover or drag a speaker';
+      }
+    }
+
+    function onRadarMouseUp() {
+      draggedItem = null;
+    }
+
+    // Spawn soundwave ripples periodically when audio is actively playing
+    let lastRippleTime = 0;
+    function updateAcousticRipples(now) {
+      if (AppState.isPlaying && now - lastRippleTime > 320) {
+        lastRippleTime = now;
+        AppState.speakers.forEach((spk, idx) => {
+          if (!spk.isMuted) {
+            acousticRings.push({
+              x: spk.x,
+              y: spk.y,
+              radius: 0,
+              maxRadius: 180,
+              alpha: 0.7,
+              speed: 1.8,
+              speakerIndex: idx
+            });
+          }
+        });
+      }
+
+      for (let i = acousticRings.length - 1; i >= 0; i--) {
+        const ring = acousticRings[i];
+        ring.radius += ring.speed;
+        ring.alpha -= 0.007;
+        if (ring.alpha <= 0 || ring.radius >= ring.maxRadius) {
+          acousticRings.splice(i, 1);
+        }
+      }
+    }
+
+    // Radar Canvas Animation Loop
+    function renderRadarFrame(timestamp) {
+      updateAcousticRipples(timestamp);
+
+      const ctx = radarCanvas.getContext('2d');
+      const w = radarCanvas.width;
+      const h = radarCanvas.height;
+
+      ctx.fillStyle = '#090b0e';
+      ctx.fillRect(0, 0, w, h);
+
+      // 1. Draw Architectural Grid
+      ctx.strokeStyle = '#171b24';
+      ctx.lineWidth = 1;
+      const gridSize = 32 * window.devicePixelRatio;
+      for (let x = 0; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // 2. Draw Room Outer Boundary Walls
+      ctx.strokeStyle = '#252b3b';
+      ctx.lineWidth = 4 * window.devicePixelRatio;
+      ctx.strokeRect(10, 10, w - 20, h - 20);
+
+      // 3. Draw Acoustic Ripples
+      acousticRings.forEach(ring => {
+        ctx.strokeStyle = `rgba(0, 229, 255, ${ring.alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(ring.x * w, ring.y * h, ring.radius * window.devicePixelRatio, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      // 4. Draw Distance Rays from Speakers to Listener
+      const lx = AppState.listener.x * w;
+      const ly = AppState.listener.y * h;
+
+      AppState.speakers.forEach(spk => {
+        const sx = spk.x * w;
+        const sy = spk.y * h;
+        ctx.strokeStyle = spk.isMuted ? 'rgba(85, 96, 110, 0.2)' : 'rgba(255, 179, 0, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(lx, ly);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // 5. Draw Speakers
+      AppState.speakers.forEach((spk, idx) => {
+        const sx = spk.x * w;
+        const sy = spk.y * h;
+        const isSelected = (idx === AppState.selectedSpeakerIndex);
+
+        // Speaker node body
+        ctx.fillStyle = isSelected ? '#ff3d71' : (spk.isMuted ? '#55606e' : '#ffb300');
+        ctx.beginPath();
+        ctx.arc(sx, sy, 10 * window.devicePixelRatio, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Outline glow
+        ctx.strokeStyle = isSelected ? '#ffffff' : '#12151c';
+        ctx.lineWidth = 2 * window.devicePixelRatio;
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${9 * window.devicePixelRatio}px ${getComputedStyle(document.body).getPropertyValue('--font-mono')}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`S${spk.id}`, sx, sy);
+      });
+
+      // 6. Draw Listener Node
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath();
+      ctx.arc(lx, ly, 11 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2 * window.devicePixelRatio;
+      ctx.stroke();
+
+      // Ears
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(lx - 12 * window.devicePixelRatio, ly, 3 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.arc(lx + 12 * window.devicePixelRatio, ly, 3 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#090b0e';
+      ctx.font = `bold ${8 * window.devicePixelRatio}px ${getComputedStyle(document.body).getPropertyValue('--font-mono')}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('EAR', lx, ly);
+
+      requestAnimationFrame(renderRadarFrame);
+    }
+
+    /* ==========================================================================
+       SPEAKER INSPECTOR & TAB MANAGEMENT
+       ========================================================================== */
+
+    function selectSpeaker(index) {
+      AppState.selectedSpeakerIndex = index;
+      renderSpeakerTabs();
+      updateSpeakerInspectorUI();
+    }
+
+    function renderSpeakerTabs() {
+      const container = document.getElementById('speakerTabsContainer');
+      container.innerHTML = '';
+
+      AppState.speakers.forEach((spk, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `speaker-tab-btn ${idx === AppState.selectedSpeakerIndex ? 'active' : ''} ${spk.isMuted ? 'muted' : ''}`;
+        btn.textContent = `S${spk.id}`;
+        btn.addEventListener('click', () => selectSpeaker(idx));
+        container.appendChild(btn);
+      });
+    }
+
+    function updateSpeakerInspectorUI() {
+      const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+      if (!spk) return;
+
+      document.getElementById('inspectorTitle').textContent = `SPEAKER ${spk.id} INSPECTOR`;
+      document.getElementById('spkDriverType').value = spk.driverType;
+
+      const physical = computeSpeakerPropagationDelay(spk);
+      const delayMs = (spk.manualDelayMs > 0) ? spk.manualDelayMs : (physical.delaySeconds * 1000);
+      document.getElementById('spkDelayVal').textContent = `${delayMs.toFixed(0)} ms (${physical.distanceMeters.toFixed(1)}m)`;
+      document.getElementById('spkDelayManual').value = delayMs;
+
+      document.getElementById('spkPan').value = spk.pan;
+      document.getElementById('spkPanVal').textContent = (spk.pan === 0) ? '0 (Center)' : (spk.pan < 0 ? `${Math.abs(Math.round(spk.pan * 100))}% L` : `${Math.round(spk.pan * 100)}% R`);
+
+      document.getElementById('spkVol').value = spk.volumeDb;
+      document.getElementById('spkVolVal').textContent = `${spk.volumeDb.toFixed(1)} dB`;
+
+      document.getElementById('spkDrive').value = spk.drive;
+      document.getElementById('spkDriveVal').textContent = `${spk.drive} %`;
+
+      document.getElementById('spkLP').value = spk.lpCutoff;
+      document.getElementById('spkLPVal').textContent = `${spk.lpCutoff.toLocaleString()} Hz`;
+
+      document.getElementById('spkSend').value = spk.reverbSend;
+      document.getElementById('spkSendVal').textContent = `${spk.reverbSend} %`;
+
+      const muteBtn = document.getElementById('btnSpeakerMute');
+      muteBtn.textContent = spk.isMuted ? 'Unmute' : 'Mute';
+      muteBtn.className = `btn ${spk.isMuted ? 'btn-danger' : ''}`;
+
+      const soloBtn = document.getElementById('btnSpeakerSolo');
+      soloBtn.textContent = spk.isSolo ? 'Unsolo' : 'Solo';
+      soloBtn.className = `btn ${spk.isSolo ? 'btn-accent' : ''}`;
+    }
+
+    function setupSpeakerInspectorListeners() {
+      document.getElementById('paramSpeakerCount').addEventListener('input', (e) => {
+        const count = parseInt(e.target.value);
+        document.getElementById('speakerCountDisplay').textContent = count;
+        initSpeakers(count);
+        rebuildSpeakerAudioNodes();
+        selectSpeaker(0);
+      });
+
+      document.getElementById('spkDriverType').addEventListener('change', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.driverType = e.target.value;
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('spkDelayManual').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.manualDelayMs = parseFloat(e.target.value);
+          document.getElementById('spkDelayVal').textContent = `${spk.manualDelayMs.toFixed(0)} ms (Manual)`;
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('btnSyncSpeedOfSound').addEventListener('click', () => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.manualDelayMs = 0;
+          updateSpeakerRuntimeParams(spk);
+          updateSpeakerInspectorUI();
+        }
+      });
+
+      document.getElementById('spkPan').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.pan = parseFloat(e.target.value);
+          document.getElementById('spkPanVal').textContent = (spk.pan === 0) ? '0 (Center)' : (spk.pan < 0 ? `${Math.abs(Math.round(spk.pan * 100))}% L` : `${Math.round(spk.pan * 100)}% R`);
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('spkVol').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.volumeDb = parseFloat(e.target.value);
+          document.getElementById('spkVolVal').textContent = `${spk.volumeDb.toFixed(1)} dB`;
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('spkDrive').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.drive = parseInt(e.target.value);
+          document.getElementById('spkDriveVal').textContent = `${spk.drive} %`;
+          if (spk.nodes && spk.nodes.saturationNode) {
+            spk.nodes.saturationNode.curve = makeDistortionCurve(spk.drive);
+          }
+        }
+      });
+
+      document.getElementById('spkLP').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.lpCutoff = parseInt(e.target.value);
+          document.getElementById('spkLPVal').textContent = `${spk.lpCutoff.toLocaleString()} Hz`;
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('spkSend').addEventListener('input', (e) => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.reverbSend = parseInt(e.target.value);
+          document.getElementById('spkSendVal').textContent = `${spk.reverbSend} %`;
+          updateSpeakerRuntimeParams(spk);
+        }
+      });
+
+      document.getElementById('btnSpeakerMute').addEventListener('click', () => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.isMuted = !spk.isMuted;
+          updateSpeakerRuntimeParams(spk);
+          renderSpeakerTabs();
+          updateSpeakerInspectorUI();
+        }
+      });
+
+      document.getElementById('btnSpeakerSolo').addEventListener('click', () => {
+        const spk = AppState.speakers[AppState.selectedSpeakerIndex];
+        if (spk) {
+          spk.isSolo = !spk.isSolo;
+          AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+          renderSpeakerTabs();
+          updateSpeakerInspectorUI();
+        }
+      });
+    }
+
+    /* ==========================================================================
+       RANDOMIZATION & CHAOS MATRIX ENGINE
+       ========================================================================== */
+
+    function randomizeAll() {
+      randomizeStructure();
+      randomizeSpeakers();
+      randomizeCable();
+      randomizeMasterAcoustics();
+    }
+
+    function randomizeStructure() {
+      AppState.room.length = Math.floor(Math.random() * 120 + 25);
+      AppState.room.width = Math.floor(Math.random() * 80 + 20);
+      AppState.room.height = Math.floor(Math.random() * 45 + 8);
+      AppState.room.rt60 = parseFloat((Math.random() * 12.0 + 2.0).toFixed(1));
+      AppState.room.preDelay = Math.floor(Math.random() * 90 + 10);
+      AppState.room.highDamp = Math.floor(Math.random() * 10000 + 1500);
+      AppState.room.bassMult = parseFloat((Math.random() * 1.8 + 0.8).toFixed(1));
+      AppState.room.diffusion = Math.floor(Math.random() * 40 + 60);
+
+      const materials = ['concrete', 'brick', 'metal', 'wood', 'marble', 'glass'];
+      AppState.room.material = materials[Math.floor(Math.random() * materials.length)];
+
+      updateStructureUI();
+      synthesizeImpulseResponse();
+    }
+
+    function randomizeSpeakers() {
+      // Randomize speaker count between 2 and 8
+      const count = Math.floor(Math.random() * 7) + 2;
+      document.getElementById('paramSpeakerCount').value = count;
+      document.getElementById('speakerCountDisplay').textContent = count;
+      initSpeakers(count);
+
+      const drivers = ['pa_horn', 'ceiling_cone', 'megaphone', 'tannoy', 'arena_stack', 'studio_flat'];
+
+      AppState.speakers.forEach(spk => {
+        spk.x = Math.random() * 0.8 + 0.1;
+        spk.y = Math.random() * 0.8 + 0.1;
+        spk.pan = parseFloat(((spk.x - 0.5) * 1.8).toFixed(2));
+        spk.volumeDb = parseFloat((Math.random() * 12 - 10).toFixed(1)); // -10 to +2 dB
+        spk.drive = Math.floor(Math.random() * 45);
+        spk.lpCutoff = Math.floor(Math.random() * 10000 + 2500);
+        spk.reverbSend = Math.floor(Math.random() * 50 + 50);
+        spk.driverType = drivers[Math.floor(Math.random() * drivers.length)];
+        spk.manualDelayMs = 0; // auto sync with physical speed of sound
+      });
+
+      rebuildSpeakerAudioNodes();
+      selectSpeaker(0);
+    }
+
+    function randomizePositions() {
+      AppState.listener.x = Math.random() * 0.6 + 0.2;
+      AppState.listener.y = Math.random() * 0.6 + 0.2;
+      AppState.speakers.forEach(spk => {
+        spk.x = Math.random() * 0.8 + 0.1;
+        spk.y = Math.random() * 0.8 + 0.1;
+        spk.pan = (spk.x - 0.5) * 1.8;
+        updateSpeakerRuntimeParams(spk);
+      });
+      updateSpeakerInspectorUI();
+    }
+
+    function randomizeCable() {
+      AppState.cable.length = Math.floor(Math.random() * 200 + 20);
+      AppState.cable.capCutoff = Math.floor(Math.random() * 10000 + 2000);
+      AppState.cable.humGain = parseFloat((Math.random() * 0.35).toFixed(2));
+      AppState.cable.crackleGain = parseFloat((Math.random() * 0.4).toFixed(2));
+      AppState.cable.slewDistortion = parseFloat((Math.random() * 0.6).toFixed(2));
+
+      updateCableUI();
+      updateCableGains();
+      AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+    }
+
+    function randomizeMasterAcoustics() {
+      AppState.master.wetLevel = parseFloat((Math.random() * 0.5 + 0.5).toFixed(2));
+      AppState.master.dryLevel = parseFloat((Math.random() * 0.5 + 0.2).toFixed(2));
+      AppState.master.stereoWidth = parseFloat((Math.random() * 0.8 + 0.8).toFixed(2));
+      AppState.master.eqLow = parseFloat((Math.random() * 6 - 2).toFixed(1));
+      AppState.master.eqMid = parseFloat((Math.random() * 6 - 3).toFixed(1));
+      AppState.master.eqHigh = parseFloat((Math.random() * 6 - 4).toFixed(1));
+
+      updateMasterUI();
+    }
+
+    function updateStructureUI() {
+      document.getElementById('paramLength').value = AppState.room.length;
+      document.getElementById('valLength').textContent = `${AppState.room.length} m`;
+
+      document.getElementById('paramWidth').value = AppState.room.width;
+      document.getElementById('valWidth').textContent = `${AppState.room.width} m`;
+
+      document.getElementById('paramHeight').value = AppState.room.height;
+      document.getElementById('valHeight').textContent = `${AppState.room.height} m`;
+
+      const vol = AppState.room.length * AppState.room.width * AppState.room.height;
+      document.getElementById('roomVolumeBadge').textContent = `${vol.toLocaleString()} m³`;
+      document.getElementById('arenaDimensionsBadge').textContent = `${AppState.room.length}m × ${AppState.room.width}m Space`;
+
+      document.getElementById('paramRT60').value = AppState.room.rt60;
+      document.getElementById('valRT60').textContent = `${AppState.room.rt60.toFixed(1)} s`;
+
+      document.getElementById('paramPreDelay').value = AppState.room.preDelay;
+      document.getElementById('valPreDelay').textContent = `${AppState.room.preDelay} ms`;
+
+      document.getElementById('paramHighDamp').value = AppState.room.highDamp;
+      document.getElementById('valHighDamp').textContent = `${AppState.room.highDamp.toLocaleString()} Hz`;
+
+      document.getElementById('paramBassMult').value = AppState.room.bassMult;
+      document.getElementById('valBassMult').textContent = `${AppState.room.bassMult.toFixed(1)} x`;
+
+      document.getElementById('paramDiffusion').value = AppState.room.diffusion;
+      document.getElementById('valDiffusion').textContent = `${AppState.room.diffusion} %`;
+
+      document.getElementById('paramMaterial').value = AppState.room.material;
+    }
+
+    function updateCableUI() {
+      document.getElementById('paramCableLength').value = AppState.cable.length;
+      document.getElementById('valCableLength').textContent = `${AppState.cable.length} m`;
+
+      document.getElementById('paramCableCapCutoff').value = AppState.cable.capCutoff;
+      document.getElementById('valCableCapCutoff').textContent = `${AppState.cable.capCutoff.toLocaleString()} Hz`;
+
+      document.getElementById('paramCableHum').value = Math.round(AppState.cable.humGain * 100);
+      document.getElementById('valCableHum').textContent = `${Math.round(AppState.cable.humGain * 100)} %`;
+
+      document.getElementById('paramCableCrackle').value = Math.round(AppState.cable.crackleGain * 100);
+      document.getElementById('valCableCrackle').textContent = `${Math.round(AppState.cable.crackleGain * 100)} %`;
+
+      document.getElementById('paramCableSlew').value = Math.round(AppState.cable.slewDistortion * 100);
+      document.getElementById('valCableSlew').textContent = `${Math.round(AppState.cable.slewDistortion * 100)} %`;
+    }
+
+    function updateMasterUI() {
+      document.getElementById('paramWetLevel').value = Math.round(AppState.master.wetLevel * 100);
+      document.getElementById('valWetLevel').textContent = `${Math.round(AppState.master.wetLevel * 100)} %`;
+
+      document.getElementById('paramDryLevel').value = Math.round(AppState.master.dryLevel * 100);
+      document.getElementById('valDryLevel').textContent = `${Math.round(AppState.master.dryLevel * 100)} %`;
+
+      document.getElementById('paramStereoWidth').value = Math.round(AppState.master.stereoWidth * 100);
+      document.getElementById('valStereoWidth').textContent = `${Math.round(AppState.master.stereoWidth * 100)} %`;
+
+      document.getElementById('paramEQLow').value = AppState.master.eqLow;
+      document.getElementById('valEQLow').textContent = `${AppState.master.eqLow >= 0 ? '+' : ''}${AppState.master.eqLow.toFixed(1)} dB`;
+
+      document.getElementById('paramEQMid').value = AppState.master.eqMid;
+      document.getElementById('valEQMid').textContent = `${AppState.master.eqMid >= 0 ? '+' : ''}${AppState.master.eqMid.toFixed(1)} dB`;
+
+      document.getElementById('paramEQHigh').value = AppState.master.eqHigh;
+      document.getElementById('valEQHigh').textContent = `${AppState.master.eqHigh >= 0 ? '+' : ''}${AppState.master.eqHigh.toFixed(1)} dB`;
+
+      if (masterWetGain) masterWetGain.gain.value = AppState.master.wetLevel;
+      if (masterDryGain) masterDryGain.gain.value = AppState.master.dryLevel;
+      if (masterEqLowNode) masterEqLowNode.gain.value = AppState.master.eqLow;
+      if (masterEqMidNode) masterEqMidNode.gain.value = AppState.master.eqMid;
+      if (masterEqHighNode) masterEqHighNode.gain.value = AppState.master.eqHigh;
+    }
+
+    /* ==========================================================================
+       REAL-TIME FFT SPECTRUM & STEREO LISSAJOUS VECTORSCOPE
+       ========================================================================== */
+
+    function initVisualizers() {
+      const canvas = document.getElementById('visualizerCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function draw() {
+        requestAnimationFrame(draw);
+        if (!masterAnalyserNode) return;
+
+        canvas.width = canvas.clientWidth * window.devicePixelRatio;
+        canvas.height = canvas.clientHeight * window.devicePixelRatio;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.fillStyle = '#0e1117';
+        ctx.fillRect(0, 0, w, h);
+
+        if (AppState.visualizerMode === 'fft') {
+          // FFT Frequency Spectrum with glowing gradient bars
+          const bufferLength = masterAnalyserNode.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          masterAnalyserNode.getByteFrequencyData(dataArray);
+
+          const barCount = 64;
+          const barWidth = (w / barCount) - 1;
+
+          for (let i = 0; i < barCount; i++) {
+            // Logarithmic bin scaling
+            const binIdx = Math.floor(Math.pow(i / barCount, 2.2) * (bufferLength * 0.75));
+            const val = dataArray[binIdx] / 255.0;
+            const barHeight = val * (h - 8);
+
+            const hue = 180 + (i / barCount) * 80; // Cyan to Emerald to Amber
+            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+            ctx.fillRect(i * (barWidth + 1), h - barHeight, barWidth, barHeight);
+          }
+        } else {
+          // Stereo Lissajous Goniometer / Vectorscope
+          const bufferLength = masterAnalyserNode.fftSize;
+          const timeData = new Uint8Array(bufferLength);
+          masterAnalyserNode.getByteTimeDomainData(timeData);
+
+          ctx.strokeStyle = '#00e5ff';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+
+          const cx = w / 2;
+          const cy = h / 2;
+          const maxRadius = Math.min(cx, cy) * 0.85;
+
+          for (let i = 0; i < bufferLength; i += 2) {
+            const v1 = (timeData[i] / 128.0) - 1.0;
+            const v2 = (timeData[i + 1] / 128.0) - 1.0;
+            const x = cx + (v1 - v2) * maxRadius * 0.7;
+            const y = cy - (v1 + v2) * maxRadius * 0.7;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        // Stereo Meter Update
+        updateStereoMeters();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    function updateStereoMeters() {
+      if (!masterAnalyserNode) return;
+      const data = new Uint8Array(64);
+      masterAnalyserNode.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < 32; i++) sum += data[i];
+      const avg = sum / (32 * 255);
+      const pct = Math.min(100, avg * 160);
+
+      document.getElementById('meterL').style.width = `${pct}%`;
+      document.getElementById('meterR').style.width = `${Math.min(100, pct * (0.9 + Math.random() * 0.2))}%`;
+    }
+
+    /* ==========================================================================
+       MULTI-FORMAT AUDIO EXPORT ENGINE (OFFLINE CONTEXT & ENCODERS)
+       ========================================================================== */
+
+    function setupExportEngine() {
+      const modal = document.getElementById('exportModal');
+      const btnOpen = document.getElementById('btnOpenExportModal');
+      const btnClose = document.getElementById('btnCloseExportModal');
+      const btnCancel = document.getElementById('btnCancelExport');
+      const btnStart = document.getElementById('btnStartExport');
+      const tailSlider = document.getElementById('paramTailPadding');
+      const tailVal = document.getElementById('valTailPadding');
+
+      btnOpen.addEventListener('click', () => {
+        modal.classList.add('open');
+      });
+
+      btnClose.addEventListener('click', () => modal.classList.remove('open'));
+      btnCancel.addEventListener('click', () => modal.classList.remove('open'));
+
+      tailSlider.addEventListener('input', (e) => {
+        tailVal.textContent = `+${parseFloat(e.target.value).toFixed(1)} s`;
+      });
+
+      btnStart.addEventListener('click', runOfflineExportBounce);
+    }
+
+    async function runOfflineExportBounce() {
+      if (!AppState.audioBuffer) {
+        alert('No audio loaded to export.');
+        return;
+      }
+
+      const format = document.getElementById('exportFormat').value;
+      const tailPaddingSec = parseFloat(document.getElementById('paramTailPadding').value);
+      const filename = document.getElementById('exportFilename').value.trim() || 'large-structure-reverb-simulation.wav';
+
+      const progressContainer = document.getElementById('renderProgressContainer');
+      const progressBar = document.getElementById('renderProgressBar');
+      const statusText = document.getElementById('renderStatusText');
+      const percentText = document.getElementById('renderPercentText');
+      const previewContainer = document.getElementById('renderedAudioPreviewContainer');
+      const downloadBtn = document.getElementById('btnDownloadExported');
+      const startBtn = document.getElementById('btnStartExport');
+
+      progressContainer.style.display = 'flex';
+      previewContainer.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      startBtn.disabled = true;
+
+      const sourceBuffer = AppState.audioBuffer;
+      const sampleRate = sourceBuffer.sampleRate;
+      const totalDuration = sourceBuffer.duration + tailPaddingSec;
+      const totalFrames = Math.floor(sampleRate * totalDuration);
+
+      statusText.textContent = `Simulating ${AppState.room.length}m Structure with ${AppState.speakers.length} Speakers...`;
+      progressBar.style.width = '15%';
+      percentText.textContent = '15%';
+
+      // 1. Create Offline Audio Context for full sample-accurate offline bounce
+      const offlineCtx = new OfflineAudioContext(2, totalFrames, sampleRate);
+
+      // Master Convolver Node with same IR
+      const offlineConvolver = offlineCtx.createConvolver();
+      offlineConvolver.buffer = AppState.room.irBuffer;
+      offlineConvolver.normalize = false;
+
+      const offlineDryGain = offlineCtx.createGain();
+      offlineDryGain.gain.value = AppState.master.dryLevel;
+
+      const offlineWetGain = offlineCtx.createGain();
+      offlineWetGain.gain.value = AppState.master.wetLevel;
+
+      offlineConvolver.connect(offlineWetGain);
+
+      // Master EQ
+      const eqLow = offlineCtx.createBiquadFilter();
+      eqLow.type = 'lowshelf';
+      eqLow.frequency.value = 120;
+      eqLow.gain.value = AppState.master.eqLow;
+
+      const eqMid = offlineCtx.createBiquadFilter();
+      eqMid.type = 'peaking';
+      eqMid.frequency.value = 1800;
+      eqMid.Q.value = 1.0;
+      eqMid.gain.value = AppState.master.eqMid;
+
+      const eqHigh = offlineCtx.createBiquadFilter();
+      eqHigh.type = 'highshelf';
+      eqHigh.frequency.value = 6500;
+      eqHigh.gain.value = AppState.master.eqHigh;
+
+      const limiter = offlineCtx.createDynamicsCompressor();
+      limiter.threshold.value = -0.5;
+      limiter.ratio.value = 20.0;
+
+      offlineDryGain.connect(eqLow);
+      offlineWetGain.connect(eqLow);
+      eqLow.connect(eqMid);
+      eqMid.connect(eqHigh);
+      eqHigh.connect(limiter);
+      limiter.connect(offlineCtx.destination);
+
+      // Recreate each speaker in offline context
+      const source = offlineCtx.createBufferSource();
+      source.buffer = sourceBuffer;
+
+      const anySolo = AppState.speakers.some(s => s.isSolo);
+
+      AppState.speakers.forEach(spk => {
+        let effVol = Math.pow(10, spk.volumeDb / 20);
+        if (spk.isMuted || (anySolo && !spk.isSolo)) effVol = 0;
+
+        const cableLp = offlineCtx.createBiquadFilter();
+        cableLp.type = 'lowpass';
+        cableLp.frequency.value = AppState.cable.enabled ? AppState.cable.capCutoff : 20000;
+
+        const spkHp = offlineCtx.createBiquadFilter();
+        const spkLp = offlineCtx.createBiquadFilter();
+        applyDriverProfile(spkHp, spkLp, spk.driverType, spk.lpCutoff);
+
+        const dist = offlineCtx.createWaveShaper();
+        dist.curve = makeDistortionCurve(spk.drive);
+
+        const phys = computeSpeakerPropagationDelay(spk);
+        const targetDelay = (spk.manualDelayMs > 0) ? (spk.manualDelayMs / 1000) : phys.delaySeconds;
+        const delay = offlineCtx.createDelay(1.5);
+        delay.delayTime.value = Math.min(1.4, Math.max(0.001, targetDelay));
+
+        const panner = offlineCtx.createStereoPanner();
+        panner.pan.value = Math.max(-1, Math.min(1, spk.pan));
+
+        const spkDry = offlineCtx.createGain();
+        spkDry.gain.value = effVol;
+
+        const spkWet = offlineCtx.createGain();
+        spkWet.gain.value = effVol * (spk.reverbSend / 100);
+
+        source.connect(cableLp);
+        cableLp.connect(spkHp);
+        spkHp.connect(spkLp);
+        spkLp.connect(dist);
+        dist.connect(delay);
+        delay.connect(panner);
+
+        panner.connect(spkDry);
+        spkDry.connect(offlineDryGain);
+
+        panner.connect(spkWet);
+        spkWet.connect(offlineConvolver);
+      });
+
+      source.start(0);
+
+      progressBar.style.width = '45%';
+      percentText.textContent = '45%';
+      statusText.textContent = 'Rendering Offline Acoustic Convolution...';
+
+      // Render audio
+      const renderedBuffer = await offlineCtx.startRendering();
+
+      progressBar.style.width = '85%';
+      percentText.textContent = '85%';
+      statusText.textContent = `Encoding ${format.toUpperCase()} Container...`;
+
+      // Format Encoding
+      let blob = null;
+      let ext = 'wav';
+
+      if (format.startsWith('wav')) {
+        const bitDepth = format === 'wav_32' ? 32 : (format === 'wav_24' ? 24 : 16);
+        blob = encodeWavBlob(renderedBuffer, bitDepth);
+        ext = 'wav';
+      } else {
+        // Fallback or WebM/OGG format
+        blob = encodeWavBlob(renderedBuffer, 16);
+        ext = 'wav';
+      }
+
+      progressBar.style.width = '100%';
+      percentText.textContent = '100%';
+      statusText.textContent = 'Render Complete!';
+
+      // Create download URL
+      const blobUrl = URL.createObjectURL(blob);
+      const audioPreview = document.getElementById('renderedAudioElement');
+      audioPreview.src = blobUrl;
+      previewContainer.style.display = 'flex';
+
+      const sizeMb = (blob.size / (1024 * 1024)).toFixed(2);
+      document.getElementById('renderedFileSize').textContent = `${sizeMb} MB`;
+
+      downloadBtn.href = blobUrl;
+      downloadBtn.download = filename.endsWith(`.${ext}`) ? filename : `${filename}.${ext}`;
+      downloadBtn.style.display = 'inline-flex';
+      startBtn.disabled = false;
+    }
+
+    // Pure JavaScript Lossless WAV Chunk Encoder (16-bit, 24-bit, 32-bit float)
+    function encodeWavBlob(audioBuffer, bitDepth = 16) {
+      const numChannels = audioBuffer.numberOfChannels;
+      const sampleRate = audioBuffer.sampleRate;
+      const numSamples = audioBuffer.length;
+      const bytesPerSample = bitDepth / 8;
+      const blockAlign = numChannels * bytesPerSample;
+      const byteRate = sampleRate * blockAlign;
+      const dataSize = numSamples * blockAlign;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+
+      function writeString(offset, str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      }
+
+      // RIFF Header
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + dataSize, true);
+      writeString(8, 'WAVE');
+
+      // fmt sub-chunk
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true); // subchunk1size (16 for PCM)
+      view.setUint16(20, bitDepth === 32 ? 3 : 1, true); // audio format (1 = PCM, 3 = IEEE Float)
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, byteRate, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bitDepth, true);
+
+      // data sub-chunk
+      writeString(36, 'data');
+      view.setUint32(40, dataSize, true);
+
+      // Write interleaved sample channels
+      let offset = 44;
+      const chL = audioBuffer.getChannelData(0);
+      const chR = numChannels > 1 ? audioBuffer.getChannelData(1) : chL;
+
+      if (bitDepth === 16) {
+        for (let i = 0; i < numSamples; i++) {
+          let sL = Math.max(-1, Math.min(1, chL[i]));
+          let sR = Math.max(-1, Math.min(1, chR[i]));
+          view.setInt16(offset, sL < 0 ? sL * 0x8000 : sL * 0x7FFF, true);
+          offset += 2;
+          view.setInt16(offset, sR < 0 ? sR * 0x8000 : sR * 0x7FFF, true);
+          offset += 2;
+        }
+      } else if (bitDepth === 24) {
+        for (let i = 0; i < numSamples; i++) {
+          let sL = Math.max(-1, Math.min(1, chL[i]));
+          let sR = Math.max(-1, Math.min(1, chR[i]));
+          let valL = sL < 0 ? sL * 0x800000 : sL * 0x7FFFFF;
+          let valR = sR < 0 ? sR * 0x800000 : sR * 0x7FFFFF;
+
+          view.setUint8(offset, valL & 0xFF);
+          view.setUint8(offset + 1, (valL >> 8) & 0xFF);
+          view.setUint8(offset + 2, (valL >> 16) & 0xFF);
+          offset += 3;
+
+          view.setUint8(offset, valR & 0xFF);
+          view.setUint8(offset + 1, (valR >> 8) & 0xFF);
+          view.setUint8(offset + 2, (valR >> 16) & 0xFF);
+          offset += 3;
+        }
+      } else if (bitDepth === 32) {
+        for (let i = 0; i < numSamples; i++) {
+          view.setFloat32(offset, chL[i], true);
+          offset += 4;
+          view.setFloat32(offset, chR[i], true);
+          offset += 4;
+        }
+      }
+
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    /* ==========================================================================
+       TOP LEVEL UI EVENT LISTENERS & PRESETS
+       ========================================================================== */
+
+    function setupEventListeners() {
+      // Transport
+      document.getElementById('btnPlayPause').addEventListener('click', togglePlayPause);
+      document.getElementById('btnStop').addEventListener('click', () => {
+        stopAudio();
+        AppState.currentTime = 0;
+        updatePlayheadPosition();
+      });
+
+      document.getElementById('btnLoop').addEventListener('click', (e) => {
+        AppState.isLooping = !AppState.isLooping;
+        e.currentTarget.classList.toggle('btn-active', AppState.isLooping);
+        if (AppState.rawAudioSourceNode) {
+          AppState.rawAudioSourceNode.loop = AppState.isLooping;
+        }
+      });
+
+      // Keyboard spacebar shortcut
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+          e.preventDefault();
+          togglePlayPause();
+        }
+        if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT') {
+          randomizeAll();
+        }
+      });
+
+      // Built-in Demo Sound Selector
+      document.getElementById('demoSoundSelect').addEventListener('change', (e) => {
+        const val = e.target.value;
+        AppState.audioBuffer = generateDemoAudioBuffer(val);
+        AppState.duration = AppState.audioBuffer.duration;
+        AppState.currentTime = 0;
+        document.getElementById('audioTrackInfo').textContent = e.target.options[e.target.selectedIndex].text;
+        drawTimelineWaveform();
+        updatePlayheadPosition();
+        playAudio(0);
+      });
+
+      // Live Mic
+      document.getElementById('btnLiveMic').addEventListener('click', toggleLiveMic);
+
+      // Structure Preset Selector
+      document.getElementById('presetSelect').addEventListener('change', (e) => {
+        applyStructurePreset(e.target.value);
+      });
+
+      // Chaos Randomize Buttons
+      document.getElementById('btnRandomizeAll').addEventListener('click', randomizeAll);
+      document.getElementById('btnRandomRoom').addEventListener('click', randomizeStructure);
+      document.getElementById('btnRandomSpeakers').addEventListener('click', randomizeSpeakers);
+      document.getElementById('btnRandomPositions').addEventListener('click', randomizePositions);
+      document.getElementById('btnRandomCable').addEventListener('click', randomizeCable);
+
+      // A/B Compare Toggle
+      document.getElementById('btnABCompare').addEventListener('click', () => {
+        AppState.isAbBypass = !AppState.isAbBypass;
+        const text = document.getElementById('abStatusText');
+        if (AppState.isAbBypass) {
+          // Bypass: 100% dry, 0% reverb
+          masterWetGain.gain.value = 0;
+          masterDryGain.gain.value = 1.0;
+          text.textContent = 'DRY (BYPASS)';
+          text.style.color = 'var(--text-muted)';
+        } else {
+          masterWetGain.gain.value = AppState.master.wetLevel;
+          masterDryGain.gain.value = AppState.master.dryLevel;
+          text.textContent = 'WET (SPACE)';
+          text.style.color = 'var(--accent-cyan)';
+        }
+      });
+
+      // Test Clap
+      document.getElementById('btnAuditionClap').addEventListener('click', () => {
+        const ctx = getAudioContext();
+        const clapBuffer = generateDemoAudioBuffer('snare_clap');
+        const clapSource = ctx.createBufferSource();
+        clapSource.buffer = clapBuffer;
+        clapSource.connect(masterInputNode);
+        clapSource.start(0);
+      });
+
+      // Structure Dimension Sliders
+      document.getElementById('paramLength').addEventListener('input', (e) => {
+        AppState.room.length = parseInt(e.target.value);
+        updateStructureUI();
+      });
+      document.getElementById('paramLength').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramWidth').addEventListener('input', (e) => {
+        AppState.room.width = parseInt(e.target.value);
+        updateStructureUI();
+      });
+      document.getElementById('paramWidth').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramHeight').addEventListener('input', (e) => {
+        AppState.room.height = parseInt(e.target.value);
+        updateStructureUI();
+      });
+      document.getElementById('paramHeight').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramMaterial').addEventListener('change', (e) => {
+        AppState.room.material = e.target.value;
+        synthesizeImpulseResponse();
+      });
+
+      document.getElementById('paramRT60').addEventListener('input', (e) => {
+        AppState.room.rt60 = parseFloat(e.target.value);
+        document.getElementById('valRT60').textContent = `${AppState.room.rt60.toFixed(1)} s`;
+      });
+      document.getElementById('paramRT60').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramPreDelay').addEventListener('input', (e) => {
+        AppState.room.preDelay = parseInt(e.target.value);
+        document.getElementById('valPreDelay').textContent = `${AppState.room.preDelay} ms`;
+      });
+      document.getElementById('paramPreDelay').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramHighDamp').addEventListener('input', (e) => {
+        AppState.room.highDamp = parseInt(e.target.value);
+        document.getElementById('valHighDamp').textContent = `${AppState.room.highDamp.toLocaleString()} Hz`;
+      });
+      document.getElementById('paramHighDamp').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramBassMult').addEventListener('input', (e) => {
+        AppState.room.bassMult = parseFloat(e.target.value);
+        document.getElementById('valBassMult').textContent = `${AppState.room.bassMult.toFixed(1)} x`;
+      });
+      document.getElementById('paramBassMult').addEventListener('change', synthesizeImpulseResponse);
+
+      document.getElementById('paramDiffusion').addEventListener('input', (e) => {
+        AppState.room.diffusion = parseInt(e.target.value);
+        document.getElementById('valDiffusion').textContent = `${AppState.room.diffusion} %`;
+      });
+      document.getElementById('paramDiffusion').addEventListener('change', synthesizeImpulseResponse);
+
+      // Cable Controls
+      document.getElementById('cableEnableToggle').addEventListener('change', (e) => {
+        AppState.cable.enabled = e.target.checked;
+        updateCableGains();
+        AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+      });
+
+      document.getElementById('cableProfileSelect').addEventListener('change', (e) => {
+        applyCableProfile(e.target.value);
+      });
+
+      document.getElementById('paramCableLength').addEventListener('input', (e) => {
+        AppState.cable.length = parseInt(e.target.value);
+        // Distance increases capacitance low-pass cutoff drop
+        AppState.cable.capCutoff = Math.max(1200, Math.floor(20000 * Math.exp(-0.007 * AppState.cable.length)));
+        updateCableUI();
+        AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+      });
+
+      document.getElementById('paramCableCapCutoff').addEventListener('input', (e) => {
+        AppState.cable.capCutoff = parseInt(e.target.value);
+        document.getElementById('valCableCapCutoff').textContent = `${AppState.cable.capCutoff.toLocaleString()} Hz`;
+        AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+      });
+
+      document.getElementById('paramCableHum').addEventListener('input', (e) => {
+        AppState.cable.humGain = parseInt(e.target.value) / 100;
+        document.getElementById('valCableHum').textContent = `${parseInt(e.target.value)} %`;
+        updateCableGains();
+      });
+
+      document.getElementById('paramHumFreq').addEventListener('change', (e) => {
+        AppState.cable.humFreq = parseInt(e.target.value);
+        if (humOscillatorNode) humOscillatorNode.frequency.value = AppState.cable.humFreq;
+      });
+
+      document.getElementById('paramCableCrackle').addEventListener('input', (e) => {
+        AppState.cable.crackleGain = parseInt(e.target.value) / 100;
+        document.getElementById('valCableCrackle').textContent = `${parseInt(e.target.value)} %`;
+        updateCableGains();
+      });
+
+      document.getElementById('paramCableSlew').addEventListener('input', (e) => {
+        AppState.cable.slewDistortion = parseInt(e.target.value) / 100;
+        document.getElementById('valCableSlew').textContent = `${parseInt(e.target.value)} %`;
+      });
+
+      // Master Mixing & EQ
+      document.getElementById('paramWetLevel').addEventListener('input', (e) => {
+        AppState.master.wetLevel = parseInt(e.target.value) / 100;
+        document.getElementById('valWetLevel').textContent = `${parseInt(e.target.value)} %`;
+        if (masterWetGain && !AppState.isAbBypass) masterWetGain.gain.value = AppState.master.wetLevel;
+      });
+
+      document.getElementById('paramDryLevel').addEventListener('input', (e) => {
+        AppState.master.dryLevel = parseInt(e.target.value) / 100;
+        document.getElementById('valDryLevel').textContent = `${parseInt(e.target.value)} %`;
+        if (masterDryGain && !AppState.isAbBypass) masterDryGain.gain.value = AppState.master.dryLevel;
+      });
+
+      document.getElementById('paramStereoWidth').addEventListener('input', (e) => {
+        AppState.master.stereoWidth = parseInt(e.target.value) / 100;
+        document.getElementById('valStereoWidth').textContent = `${parseInt(e.target.value)} %`;
+      });
+
+      document.getElementById('paramEQLow').addEventListener('input', (e) => {
+        AppState.master.eqLow = parseFloat(e.target.value);
+        document.getElementById('valEQLow').textContent = `${AppState.master.eqLow >= 0 ? '+' : ''}${AppState.master.eqLow.toFixed(1)} dB`;
+        if (masterEqLowNode) masterEqLowNode.gain.value = AppState.master.eqLow;
+      });
+
+      document.getElementById('paramEQMid').addEventListener('input', (e) => {
+        AppState.master.eqMid = parseFloat(e.target.value);
+        document.getElementById('valEQMid').textContent = `${AppState.master.eqMid >= 0 ? '+' : ''}${AppState.master.eqMid.toFixed(1)} dB`;
+        if (masterEqMidNode) masterEqMidNode.gain.value = AppState.master.eqMid;
+      });
+
+      document.getElementById('paramEQHigh').addEventListener('input', (e) => {
+        AppState.master.eqHigh = parseFloat(e.target.value);
+        document.getElementById('valEQHigh').textContent = `${AppState.master.eqHigh >= 0 ? '+' : ''}${AppState.master.eqHigh.toFixed(1)} dB`;
+        if (masterEqHighNode) masterEqHighNode.gain.value = AppState.master.eqHigh;
+      });
+
+      document.getElementById('paramMasterGain').addEventListener('input', (e) => {
+        const db = parseFloat(e.target.value);
+        AppState.master.gain = Math.pow(10, db / 20);
+        document.getElementById('valMasterGain').textContent = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+        if (masterOutputGain) masterOutputGain.gain.value = AppState.master.gain;
+      });
+
+      // Visualizer Mode Toggle
+      document.getElementById('btnVisualizerMode').addEventListener('click', (e) => {
+        AppState.visualizerMode = (AppState.visualizerMode === 'fft') ? 'vectorscope' : 'fft';
+        e.currentTarget.textContent = (AppState.visualizerMode === 'fft') ? 'FFT Spectrum ⇄' : 'Vectorscope ⇄';
+      });
+    }
+
+    // Structure Presets
+    function applyStructurePreset(presetKey) {
+      switch (presetKey) {
+        case 'cathedral':
+          AppState.room.length = 110;
+          AppState.room.width = 45;
+          AppState.room.height = 32;
+          AppState.room.material = 'marble';
+          AppState.room.rt60 = 7.8;
+          AppState.room.preDelay = 45;
+          AppState.room.highDamp = 3600;
+          AppState.room.bassMult = 1.8;
+          AppState.room.diffusion = 90;
+          break;
+        case 'hangar':
+          AppState.room.length = 140;
+          AppState.room.width = 95;
+          AppState.room.height = 25;
+          AppState.room.material = 'metal';
+          AppState.room.rt60 = 5.4;
+          AppState.room.preDelay = 65;
+          AppState.room.highDamp = 4800;
+          AppState.room.bassMult = 1.3;
+          AppState.room.diffusion = 75;
+          break;
+        case 'cavern':
+          AppState.room.length = 120;
+          AppState.room.width = 60;
+          AppState.room.height = 28;
+          AppState.room.material = 'concrete';
+          AppState.room.rt60 = 9.2;
+          AppState.room.preDelay = 55;
+          AppState.room.highDamp = 2400;
+          AppState.room.bassMult = 2.4;
+          AppState.room.diffusion = 95;
+          break;
+        case 'stadium':
+          AppState.room.length = 180;
+          AppState.room.width = 120;
+          AppState.room.height = 50;
+          AppState.room.material = 'concrete';
+          AppState.room.rt60 = 4.2;
+          AppState.room.preDelay = 80;
+          AppState.room.highDamp = 3200;
+          AppState.room.bassMult = 1.4;
+          AppState.room.diffusion = 70;
+          break;
+        case 'parking':
+          AppState.room.length = 75;
+          AppState.room.width = 35;
+          AppState.room.height = 3.8;
+          AppState.room.material = 'concrete';
+          AppState.room.rt60 = 3.5;
+          AppState.room.preDelay = 22;
+          AppState.room.highDamp = 4200;
+          AppState.room.bassMult = 1.5;
+          AppState.room.diffusion = 65;
+          break;
+        case 'warehouse':
+          AppState.room.length = 85;
+          AppState.room.width = 50;
+          AppState.room.height = 12;
+          AppState.room.material = 'metal';
+          AppState.room.rt60 = 4.8;
+          AppState.room.preDelay = 38;
+          AppState.room.highDamp = 5000;
+          AppState.room.bassMult = 1.2;
+          AppState.room.diffusion = 80;
+          break;
+        case 'gymnasium':
+          AppState.room.length = 45;
+          AppState.room.width = 30;
+          AppState.room.height = 9;
+          AppState.room.material = 'wood';
+          AppState.room.rt60 = 2.6;
+          AppState.room.preDelay = 18;
+          AppState.room.highDamp = 6200;
+          AppState.room.bassMult = 1.1;
+          AppState.room.diffusion = 75;
+          break;
+        case 'cooling_tower':
+          AppState.room.length = 90;
+          AppState.room.width = 90;
+          AppState.room.height = 140;
+          AppState.room.material = 'concrete';
+          AppState.room.rt60 = 12.0;
+          AppState.room.preDelay = 70;
+          AppState.room.highDamp = 2800;
+          AppState.room.bassMult = 2.2;
+          AppState.room.diffusion = 95;
+          break;
+      }
+      updateStructureUI();
+      synthesizeImpulseResponse();
+    }
+
+    // Cable Profiles
+    function applyCableProfile(profileKey) {
+      AppState.cable.profile = profileKey;
+      switch (profileKey) {
+        case 'cheap_copper':
+          AppState.cable.capCutoff = 4800;
+          AppState.cable.humGain = 0.14;
+          AppState.cable.crackleGain = 0.16;
+          AppState.cable.slewDistortion = 0.25;
+          break;
+        case 'weathered_multicore':
+          AppState.cable.capCutoff = 3600;
+          AppState.cable.humGain = 0.22;
+          AppState.cable.crackleGain = 0.24;
+          AppState.cable.slewDistortion = 0.35;
+          break;
+        case 'rusty_pa':
+          AppState.cable.capCutoff = 2800;
+          AppState.cable.humGain = 0.30;
+          AppState.cable.crackleGain = 0.38;
+          AppState.cable.slewDistortion = 0.50;
+          break;
+        case 'vintage_coax':
+          AppState.cable.capCutoff = 5800;
+          AppState.cable.humGain = 0.08;
+          AppState.cable.crackleGain = 0.10;
+          AppState.cable.slewDistortion = 0.15;
+          break;
+        case 'studio_grade':
+          AppState.cable.capCutoff = 18000;
+          AppState.cable.humGain = 0.0;
+          AppState.cable.crackleGain = 0.0;
+          AppState.cable.slewDistortion = 0.0;
+          break;
+      }
+      updateCableUI();
+      updateCableGains();
+      AppState.speakers.forEach(s => updateSpeakerRuntimeParams(s));
+    }
+
+    /* ==========================================================================
+       INITIALIZATION BOOTSTRAP
+       ========================================================================== */
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Speakers Array
+      initSpeakers(4);
+
+      // 2. Setup DSP Graph
+      setupMasterAudioGraph();
+
+      // 3. UI and Canvas
+      renderSpeakerTabs();
+      updateSpeakerInspectorUI();
+      initRadar();
+      initVisualizers();
+      setupEventListeners();
+      setupSpeakerInspectorListeners();
+      setupFileUploader();
+      setupExportEngine();
+      updateStructureUI();
+      updateCableUI();
+      updateMasterUI();
+
+      // 4. Load initial demo track
+      AppState.audioBuffer = generateDemoAudioBuffer('pa_announcement');
+      AppState.duration = AppState.audioBuffer.duration;
+      drawTimelineWaveform();
+      updatePlayheadPosition();
+
+      // Click to unlock WebAudio on first user gesture
+      const unlockAudio = () => {
+        getAudioContext();
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('keydown', unlockAudio);
+      };
+      window.addEventListener('click', unlockAudio);
+      window.addEventListener('keydown', unlockAudio);
+    });
+  </script>
+</body>
+</html>
