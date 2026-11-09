@@ -37,7 +37,10 @@
                         (Low Shelf 120Hz, Mid Peak 1.8kHz, High Shelf 6.5kHz)
                                 |
                         [Lookahead Brickwall Limiter]
-                        (Threshold: -0.1 dBFS, Ratio: 20:1, Fast Attack)
+                        (Threshold: -0.5 dBFS, Ratio: 20:1, Fast Attack)
+                                |
+                    [Global / Master Output Volume Gain]
+                    (-24 dB to +6 dB, calibrated fader)
                                 |
                         +-------+-------+
                         |               |

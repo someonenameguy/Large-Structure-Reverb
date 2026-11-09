@@ -900,6 +900,17 @@
 
       <!-- Live Mic Input -->
       <button id="btnLiveMic" class="btn" title="Toggle Live Microphone monitoring through Arena Speakers &amp; Reverb">&#x1F3A4; Mic</button>
+
+      <!-- Input Pre-Amp & Global / Master Volume Quick Controls -->
+      <div class="transport-volume-group" style="display: flex; align-items: center; gap: 8px; padding-left: 10px; margin-left: 4px; border-left: 1px solid var(--border-subtle);">
+        <span class="control-label" style="font-size: 11px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 3px;" title="Input Pre-Amp Volume">&#x1F39B; Input:</span>
+        <input type="range" id="paramInputGainTransport" min="-24" max="12" step="0.5" value="0" style="width: 70px;" title="Input Pre-Amp Volume (-24 dB to +12 dB)">
+        <span class="control-value" id="valInputGainTransport" style="font-size: 11px; width: 46px; text-align: right;">0.0 dB</span>
+
+        <span class="control-label" style="font-size: 11px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 3px; margin-left: 6px;" title="Global / Master Output Volume">&#x1F50A; Globe:</span>
+        <input type="range" id="paramGlobalVolumeTransport" min="-24" max="6" step="0.5" value="0" style="width: 70px;" title="Global / Master Output Volume (-24 dB to +6 dB)">
+        <span class="control-value" id="valGlobalVolumeTransport" style="font-size: 11px; width: 46px; text-align: right;">0.0 dB</span>
+      </div>
     </div>
   </div>
 
@@ -1361,7 +1372,15 @@
 
           <div class="control-row">
             <div class="control-label-group">
-              <span class="control-label">Master Output Volume</span>
+              <span class="control-label">Input Pre-Amp Volume</span>
+              <span class="control-value" id="valInputGain">0.0 dB</span>
+            </div>
+            <input type="range" id="paramInputGain" min="-24" max="12" step="0.5" value="0">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label-group">
+              <span class="control-label">Global / Master Output Volume</span>
               <span class="control-value" id="valMasterGain">0.0 dB</span>
             </div>
             <input type="range" id="paramMasterGain" min="-24" max="6" step="0.5" value="0">
@@ -1512,6 +1531,12 @@
         coreBuzz: 0.25,      // 0 to 1
         crackleGain: 0.15,   // 0 to 1
         slewDistortion: 0.20 // 0 to 1
+      },
+
+      // Input Pre-Amp Parameters
+      input: {
+        gain: 1.0,
+        volumeDb: 0.0
       },
 
       // Master Mixing & EQ
@@ -1828,7 +1853,7 @@
 
       // Master Input Pre-Amp
       masterInputNode = ctx.createGain();
-      masterInputNode.gain.value = 1.0;
+      masterInputNode.gain.value = AppState.input.gain;
 
       // Master Convolver for Realistic Structure Reverb
       masterConvolverNode = ctx.createConvolver();
@@ -4701,6 +4726,24 @@
       document.getElementById('paramEQHigh').value = AppState.master.eqHigh;
       document.getElementById('valEQHigh').textContent = `${AppState.master.eqHigh >= 0 ? '+' : ''}${AppState.master.eqHigh.toFixed(1)} dB`;
 
+      // Input Pre-Amp Volume
+      const inputDb = AppState.input ? AppState.input.volumeDb : 0;
+      const inputDbStr = `${inputDb >= 0 ? '+' : ''}${inputDb.toFixed(1)} dB`;
+      if (document.getElementById('paramInputGain')) document.getElementById('paramInputGain').value = inputDb;
+      if (document.getElementById('valInputGain')) document.getElementById('valInputGain').textContent = inputDbStr;
+      if (document.getElementById('paramInputGainTransport')) document.getElementById('paramInputGainTransport').value = inputDb;
+      if (document.getElementById('valInputGainTransport')) document.getElementById('valInputGainTransport').textContent = inputDbStr;
+
+      // Global / Master Output Volume
+      const masterDb = 20 * Math.log10(Math.max(0.0001, AppState.master.gain || 1.0));
+      const masterDbStr = `${masterDb >= 0 ? '+' : ''}${masterDb.toFixed(1)} dB`;
+      if (document.getElementById('paramMasterGain')) document.getElementById('paramMasterGain').value = masterDb.toFixed(1);
+      if (document.getElementById('valMasterGain')) document.getElementById('valMasterGain').textContent = masterDbStr;
+      if (document.getElementById('paramGlobalVolumeTransport')) document.getElementById('paramGlobalVolumeTransport').value = masterDb.toFixed(1);
+      if (document.getElementById('valGlobalVolumeTransport')) document.getElementById('valGlobalVolumeTransport').textContent = masterDbStr;
+
+      if (masterInputNode && AppState.input) masterInputNode.gain.value = AppState.input.gain;
+      if (masterOutputGain) masterOutputGain.gain.value = AppState.master.gain;
       if (masterWetGain) masterWetGain.gain.value = AppState.master.wetLevel;
       if (masterDryGain) masterDryGain.gain.value = AppState.master.dryLevel;
       if (masterEqLowNode) masterEqLowNode.gain.value = AppState.master.eqLow;
@@ -5467,6 +5510,11 @@
       const source = offlineCtx.createBufferSource();
       source.buffer = sourceBuffer;
 
+      // Master Input Pre-Amp Gain Stage for Offline Render
+      const offlineInputGain = offlineCtx.createGain();
+      offlineInputGain.gain.value = AppState.input ? AppState.input.gain : 1.0;
+      source.connect(offlineInputGain);
+
       const anySolo = AppState.speakers.some(s => s.isSolo);
 
       AppState.speakers.forEach(spk => {
@@ -5541,8 +5589,8 @@
         spkWet.gain.value = effVol * (spk.reverbSend / 100);
 
         // Audio Routing:
-        // source -> cableLp -> cableSat -> phaseGain -> userHp -> spkHp -> spkLp -> userLp -> airFilter -> dist -> delay -> distDirGain -> panner
-        source.connect(cableLp);
+        // source -> offlineInputGain -> cableLp -> cableSat -> phaseGain -> userHp -> spkHp -> spkLp -> userLp -> airFilter -> dist -> delay -> distDirGain -> panner
+        offlineInputGain.connect(cableLp);
         cableLp.connect(cableSat);
         cableSat.connect(phaseGain);
         phaseGain.connect(userHp);
@@ -6054,12 +6102,64 @@
         if (masterEqHighNode) masterEqHighNode.gain.value = AppState.master.eqHigh;
       });
 
-      document.getElementById('paramMasterGain').addEventListener('input', (e) => {
-        const db = parseFloat(e.target.value);
+      // Input Pre-Amp Volume Listeners (Main Panel & Transport Bar Synced)
+      function onInputGainChange(db) {
+        AppState.input.volumeDb = db;
+        AppState.input.gain = Math.pow(10, db / 20);
+        const str = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+        const pInput = document.getElementById('paramInputGain');
+        const vInput = document.getElementById('valInputGain');
+        const pTrans = document.getElementById('paramInputGainTransport');
+        const vTrans = document.getElementById('valInputGainTransport');
+        if (pInput && pInput.value !== String(db)) pInput.value = db;
+        if (vInput) vInput.textContent = str;
+        if (pTrans && pTrans.value !== String(db)) pTrans.value = db;
+        if (vTrans) vTrans.textContent = str;
+        if (masterInputNode) masterInputNode.gain.value = AppState.input.gain;
+      }
+
+      const paramInputGainEl = document.getElementById('paramInputGain');
+      if (paramInputGainEl) {
+        paramInputGainEl.addEventListener('input', (e) => {
+          onInputGainChange(parseFloat(e.target.value));
+        });
+      }
+
+      const paramInputGainTransEl = document.getElementById('paramInputGainTransport');
+      if (paramInputGainTransEl) {
+        paramInputGainTransEl.addEventListener('input', (e) => {
+          onInputGainChange(parseFloat(e.target.value));
+        });
+      }
+
+      // Global / Master Output Volume Listeners (Main Panel & Transport Bar Synced)
+      function onGlobalVolumeChange(db) {
         AppState.master.gain = Math.pow(10, db / 20);
-        document.getElementById('valMasterGain').textContent = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+        const str = `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+        const pMaster = document.getElementById('paramMasterGain');
+        const vMaster = document.getElementById('valMasterGain');
+        const pGlobe = document.getElementById('paramGlobalVolumeTransport');
+        const vGlobe = document.getElementById('valGlobalVolumeTransport');
+        if (pMaster && pMaster.value !== String(db)) pMaster.value = db;
+        if (vMaster) vMaster.textContent = str;
+        if (pGlobe && pGlobe.value !== String(db)) pGlobe.value = db;
+        if (vGlobe) vGlobe.textContent = str;
         if (masterOutputGain) masterOutputGain.gain.value = AppState.master.gain;
-      });
+      }
+
+      const paramMasterGainEl = document.getElementById('paramMasterGain');
+      if (paramMasterGainEl) {
+        paramMasterGainEl.addEventListener('input', (e) => {
+          onGlobalVolumeChange(parseFloat(e.target.value));
+        });
+      }
+
+      const paramGlobalVolumeTransEl = document.getElementById('paramGlobalVolumeTransport');
+      if (paramGlobalVolumeTransEl) {
+        paramGlobalVolumeTransEl.addEventListener('input', (e) => {
+          onGlobalVolumeChange(parseFloat(e.target.value));
+        });
+      }
 
       // Visualizer Multi-Mode Switcher & Tabs
       document.getElementById('btnVisualizerMode').addEventListener('click', () => {

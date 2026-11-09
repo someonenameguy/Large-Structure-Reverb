@@ -92,7 +92,22 @@ MEGASTRUCTURE is a zero-dependency, single-file in-browser audio workstation.
 
 ---
 
-## 7. Pure-JS Lossless WAV & IR WAV Exporter
+## 7. Master Mixing, Gain Staging & Volume Controls
+- **Input Pre-Amp Volume**:
+  - Calibrated range: $-24.0\text{ dB}$ to $+12.0\text{ dB}$ ($0.5\text{ dB}$ precision steps).
+  - Regulates all source levels entering the arena matrix (uploaded audio, live microphone, test claps, and audition loops) before speaker driver saturation and cable emulation.
+  - Accessible via both the **Top Transport Bar** (`🎛 In:`) for quick on-the-fly gain staging and the **Master Mixing & Output** panel.
+- **Global / Master Output Volume ("Globe")**:
+  - Calibrated range: $-24.0\text{ dB}$ to $+6.0\text{ dB}$ ($0.5\text{ dB}$ steps) feeding the master brickwall peak limiter.
+  - Synchronized in real time between the **Top Transport Bar** (`🔊 Globe:`) and the **Master Output** slider.
+  - Fully integrated into both the real-time Web Audio rendering pipeline and the multi-format `OfflineAudioContext` bounce exporter.
+- **Master Wet & Dry Summing**: Dedicated linear dry bypass and wet reverb level percentage sliders.
+- **3-Band Parametric Master EQ**: Low shelf ($120\text{ Hz}$), Peaking Mid ($1,800\text{ Hz}$), and High shelf ($6,500\text{ Hz}$).
+- **0 dBFS Brickwall Limiter**: Protects monitor transducers and auditory health against clipping and sudden volume spikes.
+
+---
+
+## 8. Pure-JS Lossless WAV & IR WAV Exporter
 - **OfflineAudioContext Accelerated Bounce**:
   - Fast offline bounce rendering up to $35\times$ faster than real-time.
   - Reverb Tail Ring-Out Capture ($0 - 18\text{s}$) prevents decay cutoffs.
