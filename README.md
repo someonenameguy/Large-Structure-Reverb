@@ -1,3 +1,8 @@
+![](https://img.shields.io/badge/AI-EXECUTE-grey?style=flat&logoSize=auto&labelColor=13171f) 
+<picture>
+    <source srcset="https://github.com/NamtaoProductions/0rwx.com/blob/main/static/AI-X-dark.svg" media="(prefers-color-scheme: dark)">
+    <img src="https://github.com/NamtaoProductions/0rwx.com/blob/main/static/AI-X-light.svg" alt="AI:0" width="auto" height="24">
+</picture> [0rwx.com](0rwx.com)
 # MEGASTRUCTURE // Large Architectural Reverb & PA Acoustic Simulator
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-00e5ff?style=for-the-badge&logo=github)](https://someonenameguy.github.io/Large-Structure-Reverb/)
