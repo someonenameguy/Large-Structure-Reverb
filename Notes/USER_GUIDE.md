@@ -1,108 +1,121 @@
-# Megastructure Audio Workstation - User Guide & Features
+# MEGASTRUCTURE // Comprehensive User Guide & Operation Manual
 
-## Summary
-`index.html` is an all-in-one single-file audio processor simulating the acoustic physics of massive architectural structures (cathedrals, hangars, caverns, sports stadiums, tunnels) and multi-speaker public-address (PA) sound reinforcement systems.
+## 1. Quick Start Guide
+MEGASTRUCTURE is a zero-dependency, single-file in-browser audio workstation.
+1. Open `index.html` in any modern web browser (Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge).
+2. The simulation initializes with the default **Grand Gothic Cathedral** preset and loaded PA chime announcement demo.
+3. Hit `Spacebar` to start playback and experience the physical reverberation in real time.
+4. Drag the listener (`EAR`) or any of the speakers (`S1`–`S16`) on the top-down **2D Spatial Arena Radar** to observe real-time spatial panning and speed-of-sound arrival delays.
 
-## Key Feature Matrix
+---
 
-### 1. Acoustic Structure Simulation
-- **Architectural Presets**:
-  - Grand Gothic Cathedral (RT60: 7.8s)
-  - Boeing 747 Aircraft Hangar (RT60: 5.4s)
-  - Subterranean Cavern (RT60: 9.2s)
-  - Open-Air Sports Arena & PA (RT60: 4.2s)
-  - Brutalist Parking Garage (RT60: 3.5s)
-  - Industrial Steel Distribution Hub (RT60: 4.8s)
-  - High-School Gymnasium (RT60: 2.6s)
-  - Nuclear Cooling Tower (RT60: 12.0s)
-  - Custom Parametric Space
-- **Physical Room Controls**:
-  - Length (15m to 200m), Width (10m to 150m), Height (4m to 75m)
-  - Calculated volume badge (e.g. 64,800 m³)
-  - Surface Materials: Polished Concrete, Weathered Brick, Corrugated Metal, Hardwood, Dense Marble, Reinforced Glass
-  - RT60 Decay Time: 0.5s to 22.0s
-  - Acoustic Pre-Delay: 0ms to 250ms
-  - Air & Wall High Damping cutoff: 800Hz to 18,000Hz
-  - Bass Resonance Decay Multiplier: 0.5x to 3.0x
-  - Reflection Diffusion: 10% to 100%
-  - Real-time procedural Impulse Response (IR) generation with early reflections ray-tracing and multi-band stochastic decay
-  - Visual IR waveform preview canvas and Test Clap audition trigger
+## 2. Architectural Presets (10 Realistic Mega-Spaces)
 
-### 2. Multi-Speaker Spatial Sound System & PA Distribution
+| # | Preset Name | $RT_{60}$ | Dimensions ($L \times W \times H$) | Volume ($\text{m}^3$) | Surface Material | Speaker Configuration | Cable Degradation Profile |
+|---|---|---|---|---|---|---|---|
+| 1 | **Grand Gothic Cathedral** | 8.5s | $115\text{m} \times 42\text{m} \times 38\text{m}$ | $183,540\,\text{m}^3$ | Italian Marble ($\alpha=0.01$) | 6 Distributed Column Speakers (`tannoy`) | Vintage 1970s Coax ($120\text{m}$, 50Hz hum, 4.2kHz rolloff) |
+| 2 | **Boeing 747 Aircraft Hangar** | 5.6s | $140\text{m} \times 80\text{m} \times 12.5\text{m}$ | $140,000\,\text{m}^3$ | Corrugated Metal ($\alpha=0.03$) | 4 High-Bay Ceiling Truss Horns (`pa_horn`) | Heavy Stage Snake ($140\text{m}$, 60Hz hum cart, 3.8kHz rolloff) |
+| 3 | **Subterranean Salt Mine / Cavern** | 11.5s | $135\text{m} \times 65\text{m} \times 24\text{m}$ | $210,600\,\text{m}^3$ | Crystalline Rock ($\alpha=0.012$) | 4 Salt Alcove Tannoys & Horns (`tannoy`, `pa_horn`) | Weathered Multicore ($165\text{m}$, damp saline corrosion & crackle) |
+| 4 | **Olympic Sports Stadium** | 4.5s | $195\text{m} \times 135\text{m} \times 48\text{m}$ | $1,263,600\,\text{m}^3$ | Cast Tier Concrete ($\alpha=0.025$) | 6 Field Perimeter Arrays & PA Horns (`arena_stack`, `pa_horn`) | Weathered Multicore ($200\text{m}$, outdoor snake, lighting ripple) |
+| 5 | **Brutalist Concrete Parking Garage** | 3.4s | $80\text{m} \times 45\text{m} \times 3.4\text{m}$ | $12,240\,\text{m}^3$ | Bare Concrete Deck ($\alpha=0.02$) | 4 Low-Ceiling Cones & Intercoms (`ceiling_cone`, `tannoy`) | Corroded Duct PA Wiring ($90\text{m}$, ballast buzz & crackle) |
+| 6 | **Nuclear Concrete Cooling Tower** | 14.0s | $88\text{m} \times 88\text{m} \times 140\text{m}$ | $1,084,160\,\text{m}^3$ | Hyperboloid Concrete ($\alpha=0.015$) | 6 Basin Ring Arrays (`arena_stack`, `pa_horn`) | Heavy Stage Snake ($150\text{m}$, cooling pump hum, 3.5kHz rolloff) |
+| 7 | **CERN Supercollider Concrete Tunnel** | 6.8s | $200\text{m} \times 10\text{m} \times 6\text{m}$ | $12,000\,\text{m}^3$ | Concrete Liner ($\alpha=0.02$) | 4 Waveguide Intercoms & Megaphones (`tannoy`, `megaphone`) | Vintage Coax ($175\text{m}$, instrumentation line, RF/klystron hum) |
+| 8 | **Taj Mahal Marble Mausoleum** | 9.6s | $58\text{m} \times 58\text{m} \times 44\text{m}$ | $148,016\,\text{m}^3$ | Makrana Marble ($\alpha=0.008$) | 4 Concealed Archway Monitors (`studio_flat`) | Studio Mogami Gold ($60\text{m}$, pristine OFC, ultra-low noise floor) |
+| 9 | **Industrial Grain Silo** | 7.5s | $26\text{m} \times 26\text{m} \times 52\text{m}$ | $35,152\,\text{m}^3$ | Galvanized Sheet Steel ($\alpha=0.035$) | 3 Suspended Cylindrical Horns (`pa_horn`, `megaphone`) | Corroded Duct PA Wiring ($75\text{m}$, motor induction hum & crackle) |
+| 10 | **Abbey Vintage Echo Chamber** | 2.8s | $18\text{m} \times 14\text{m} \times 6.5\text{m}$ | $1,638\,\text{m}^3$ | Glazed Plaster & Tile ($\alpha=0.035$) | 2 Corner Diffuser Monitors (`studio_flat`) | Vintage 1970s Coax ($45\text{m}$, warm valve saturation, 50Hz hum) |
+
+---
+
+## 3. Physical Acoustics & Procedural IR Engine
+- **Room Dimension Sliders**:
+  - Length ($15 - 200\text{m}$), Width ($10 - 150\text{m}$), Height ($4 - 75\text{m}$).
+  - Live volume readouts in cubic meters ($\text{m}^3$).
+- **Surface Materials**:
+  - Select between Concrete, Brick, Metal, Wood, Marble, and Glass.
+  - Automatically loads empirical absorption coefficients based on Eyring-Norris acoustic modeling.
+- **Parametric Acoustic Controls**:
+  - **$RT_{60}$**: Decay time from $0.5\text{s}$ to $22.0\text{s}$.
+  - **Pre-Delay**: Initial silence gap ($0 - 250\text{ms}$) simulating direct-to-boundary flight time.
+  - **Air & Wall Damping**: Lowpass cutoff ($800\text{Hz} - 18,000\text{Hz}$) modeling atmospheric absorption over distance.
+  - **Bass Multiplier**: Scales low-frequency decay ($0.5\times - 3.0\times$) for cavernous resonances.
+  - **Reflection Diffusion**: Controls ray scattering density ($10\% - 100\%$).
+- **Test Clap Dirac Trigger**:
+  - Instantaneous acoustic impulse button (`Audition Test Clap`) to evaluate room decay tail in isolation.
+
+---
+
+## 4. 16-Speaker Spatial Array & Delay Alignment
 - **Interactive 2D Spatial Arena Radar**:
-  - Top-down visual floorplan with acoustic boundary walls
-  - Interactive drag-and-drop: move Listener (Ear) and any Speaker (S1-S12) anywhere in the space
-  - Real-time animated soundwave ripples expanding at $343\text{ m/s}$ when audio plays
-  - Calculated line-of-sight distance rays with distance in meters and arrival time in milliseconds
-  - "Scatter" button for randomized acoustic speaker placements
-- **Speaker Array System (1 to 12 configurable speakers)**:
-  - Speaker tabs (S1 to S12) with Solo and Mute switches
-  - Speaker Driver Emulation:
-    - Stadium PA Horn (350Hz - 4.5kHz bandpass, resonant horn peak)
-    - Warehouse Ceiling Cone (250Hz - 6kHz midrange)
-    - Megaphone / Bullhorn (500Hz - 3kHz, high saturation)
-    - Tannoy Intercom (gritty telephony band)
-    - Full-Range Arena Line Array (punchy sub)
-    - High-Fidelity Flat Studio Monitor
-  - Physical Speed-of-Sound Delay: Automatic calculation ($t = d / 343$) or manual override (0 to 450 ms)
-  - Stereo Pan (-100% Left to +100% Right)
-  - Volume Level (-40dB to +6dB)
-  - Diaphragm Saturation & Overdrive (0% to 100%)
-  - Low-Pass Filter (400Hz to 18,000Hz)
-  - Individual Speaker Reverb Room Send (0% to 100%)
+  - Drag listener (`EAR`) to reposition the binaural monitoring vantage point.
+  - Drag individual speakers (`S1` through `S16`) to design stadium, arena, or warehouse sound reinforcement systems.
+  - Live animated wavefront ripples visualize acoustic sound waves travelling at physical speed ($343\text{ m/s}$).
+  - Distance rays display physical distance ($m$) and arrival time ($ms$).
+- **Delay Alignment Network**:
+  - **Auto Delay Alignment**: Automatically computes and injects compensation delays across all satellite speakers so their wavefronts arrive at the listener simultaneously.
+  - **Haas Precedence Mode**: Introduces a $10 - 25\text{ms}$ delay offset to secondary clusters, anchoring perceived localization to the stage while adding reinforcing acoustic power.
+  - **Manual Delay Override**: Set explicit delay times ($0 - 450\text{ms}$) per speaker channel.
+- **Speaker Driver Emulations**:
+  1. *Stadium PA Horn*: $350\text{Hz} - 4.5\text{kHz}$ bandpass with resonant horn flare.
+  2. *Warehouse Ceiling Cone*: Midrange cone with wide dispersion.
+  3. *Bullhorn / Megaphone*: Severe bandwidth restriction with aggressive diaphragm distortion.
+  4. *Tannoy Intercom*: Vintage paging horn with gritty asymmetric clipping.
+  5. *Arena Line Array*: High-SPL full-range driver with sub-bass coupling.
+  6. *Studio Monitor*: Transparent, ultra-flat frequency response.
+- **Per-Speaker Strip Controls**:
+  - Pan ($-100\%$ Left to $+100\%$ Right), Volume ($-40\text{dB}$ to $+6\text{dB}$), Diaphragm Drive ($0 - 100\%$), Low-Pass Filter ($400\text{Hz} - 18\text{kHz}$), Reverb Send ($0 - 100\%$), Solo, and Mute switches.
 
-### 3. Low-Quality Cable & Transmission Degradation
-- **Cable Emulation Toggle (Engaged / Bypassed)**
-- **Cable Profiles**:
-  - Budget Unshielded 100m Copper (Heavy High-Cut)
-  - Weathered Stadium Multicore (Hum + HF Drop)
-  - Corroded Industrial PA Wiring (Crackle + Saturated)
-  - Vintage 1970s Coaxial Cable
-  - Pristine Oxygen-Free Studio Mogami
-- **Degradation Controls**:
-  - Cable Run Distance (5m to 300m)
-  - Capacitance High-Frequency Rolloff (1,000Hz to 18,000Hz)
-  - AC Ground Loop Hum (50Hz UK/EU or 60Hz US with harmonic overtones)
-  - Contact Static Crackle & Microphonic Pops (sparse Poisson impulse bursts)
-  - Transformer Slew Distortion
+---
 
-### 4. Randomization / "Chaos Engine"
-- **"Randomize All" Master Button**: Simultaneously randomizes room architecture, materials, RT60, speaker count, positions, delays, pans, cutoffs, volume levels, cable degradation, and reverb balance!
-- Dedicated Sub-Randomizers:
-  - Random Room Architecture
-  - Random Speakers (driver types, pans, delays, filters, drives)
-  - Scatter 2D Radar Positions
-  - Randomize Cable Wear & Static
+## 5. Vintage Transmission & Cable Degradation
+- **Cable Emulation Toggle**: Easily toggle degradation on or off for A/B testing.
+- **Cable Models**:
+  - *Budget Unshielded Copper (100m)*: Heavy capacitive high-frequency attenuation.
+  - *Weathered Stadium Multicore*: High-frequency rolloff + noticeable inductive hum.
+  - *Corroded Industrial PA Wiring*: Severe contact crackle and microphonic pops.
+  - *Vintage 1970s Coaxial*: Warm transformer saturation and mild roll-off.
+  - *Studio Mogami*: Pristine, wideband, reference-grade transfer.
+- **Degradation Parameters**:
+  - Run Distance ($5 - 300\text{m}$).
+  - Capacitive Cutoff ($1,000\text{Hz} - 18,000\text{Hz}$).
+  - AC Ground Loop Hum ($50\text{Hz}$ UK/EU or $60\text{Hz}$ US with harmonic overtones).
+  - Poisson Contact Crackle & Microphonic Pops ($0 - 100\%$).
+  - Transformer Slew Distortion ($0 - 100\%$).
 
-### 5. Multi-Format Audio Import & Export
-- **Audio Inputs**:
-  - File Upload / Drag-and-Drop: Supports WAV, MP3, OGG, FLAC, AAC, M4A, WEBM, AIFF
-  - 6 Built-in High-Fidelity Synthetic Demos:
-    - European Airport/Station PA Chime & Vocal Announcement
-    - Acoustic Snare & Handclap
-    - 808 Hip-Hop Drum Break
-    - Synth Brass Chord Progression
-    - Plucked Guitar Harmonic
-    - Dirac Acoustic Impulse Click
-  - Live Microphone input with real-time room monitoring
-- **Audio Export Formats**:
-  - WAV 16-bit Lossless PCM (Standard Universal Master)
-  - WAV 24-bit Lossless Studio Master PCM
-  - WAV 32-bit Floating Point Lossless Master
-  - MP3 High Quality (320 kbps / 192 kbps)
-  - WebM / OGG Vorbis Streaming Audio
-- **Export Features**:
-  - Reverb Tail Ring-out Capture Padding (+0s to +18s) to ensure cathedral decay is never clipped
-  - OfflineAudioContext accelerated rendering
-  - In-browser playback preview of rendered file + direct file download button
+---
 
-### 6. Mixing, Visualizers & Master Controls
-- Total Reverb Level (Wet) and Direct Speaker Level (Dry) faders
-- Stereo Acoustic Width (0% to 200%)
-- 3-Band Parametric Equalizer (Low Shelf, Mid Peaking, High Shelf)
-- Master Volume (-24dB to +6dB)
-- Transparent Brickwall Limiter (0 dBFS ceiling) to prevent clipping
-- Dual Visualizers: Real-Time FFT Frequency Spectrum Analyzer & Stereo Lissajous Vectorscope
-- Dual Left/Right Stereo Peak & RMS Meters
-- A/B Compare Toggle (Dry Direct vs Wet Space)
-- Spacebar shortcut for Play/Pause, R for Randomize All
+## 6. Multi-Mode 60FPS Visualizer Suite
+- **Mode 1: 64-Band FFT Spectrum Analyzer**: Real-time logarithmic frequency visualization with animated peak decay.
+- **Mode 2: Stereo Lissajous Goniometer / Vectorscope**: $45^\circ$ rotated phase correlation display to verify mono compatibility and stereo spread.
+- **Mode 3: Time-Domain Oscilloscope**: Crisp real-time waveform monitoring synchronized to zero-crossings.
+- **Mode 4: Procedural IR Waveform Canvas**: Displays synthesized early reflections and exponential decay envelope.
+- **Stereo VU Meter**: Left/Right peak and RMS meters with 3-second peak-hold indicator and clip warnings.
+
+---
+
+## 7. Pure-JS Lossless WAV & IR WAV Exporter
+- **OfflineAudioContext Accelerated Bounce**:
+  - Fast offline bounce rendering up to $35\times$ faster than real-time.
+  - Reverb Tail Ring-Out Capture ($0 - 18\text{s}$) prevents decay cutoffs.
+- **Export Formats**:
+  1. **WAV 16-bit PCM**: Universal CD-standard master.
+  2. **WAV 24-bit PCM**: High-resolution studio master.
+  3. **WAV 32-bit IEEE Float**: Professional DAW floating-point interchange.
+  4. **MP3**: 320 kbps CBR / 192 kbps CBR.
+  5. **WebM / OGG Vorbis**: Web audio streaming format.
+  6. **Impulse Response (IR) WAV Export**: Direct download of the procedural stereo impulse response WAV for loading into Altiverb, FabFilter Pro-R 2, REAPER ReaVerb, or hardware convolvers.
+
+---
+
+## 8. Keyboard Shortcuts Reference
+
+| Shortcut | Action | Description |
+|---|---|---|
+| `Space` | **Play / Pause** | Toggle playback of the current audio source or synth demo |
+| `R` | **Randomize All** | Trigger the Chaos Engine to randomize architecture, speakers, and cables |
+| `C` | **Test Clap** | Audition Dirac clap transient to evaluate room acoustics |
+| `A` | **A/B Compare** | Instant switch between processed Wet space and direct Dry audio |
+| `M` | **Master Mute** | Mute or unmute the master audio output |
+| `S` | **Solo Speaker** | Solo the currently selected speaker channel |
+| `V` | **Cycle Visualizer** | Cycle between FFT Spectrum, Lissajous Vectorscope, and Oscilloscope |
+| `1` – `9`, `0` | **Select Preset** | Rapidly switch through architectural space presets 1 through 10 |
+| `Esc` | **Close Dialogs** | Dismiss active export modals or dialog windows |
